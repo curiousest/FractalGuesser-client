@@ -1,7 +1,29 @@
 window.TargetFractal = class extends Backbone.Model
-  constructor: (@zoom, @coordinates) ->
+  defaults:
+    zoom: 1
+    coordinates: [0,0]
   
-  zoomIn: (zoomIncrease) ->
-    @zoom = @zoom * zoomIncrease
+  zoomIn: (zoomIncrease) =>
+    @set 'zoom', @get('zoom') * zoomIncrease
 
-target = new window.TargetFractal()
+window.TargetFractalView = class extends Backbone.View
+  template: _.template(
+    "<div id='target-canvas'>
+        <%= fractal %>
+        <div id='target-zoom' class='zoom'><%= zoom %>x</div>
+    </div>")
+
+  constructor: (options={}) ->
+    {@model, @classname} = options
+    $(document).on "ready", =>
+      @$el = $ '#target-fractal'
+      @render()
+    
+  initialize: ->
+    @model.on('change', @render, @)    
+    
+  render_fractal: ->
+    return 'dud'
+  
+  render: =>
+    @$el.html(@template({'zoom':@model.get('zoom'), 'fractal': @render_fractal()}))

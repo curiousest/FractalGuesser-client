@@ -5,10 +5,10 @@
   target_fractal = new window.TargetFractal();
 
   describe('TargetFractal', function() {
-    return describe('#zoomIn()', function() {
+    return describe('zoomIn(int)', function() {
       return it('should zoom in to 2 when initially zoomed in 2', function() {
         target_fractal.zoomIn(2);
-        return target_fractal.get('zoom').should.be(2);
+        return target_fractal.get('zoom').should.be.exactly(2);
       });
     });
   });
