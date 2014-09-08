@@ -1,10 +1,13 @@
-assert = require 'assert'
+target_fractal = new window.TargetFractal()
 
-describe('Array', ->
-  describe('#indexOf()', ->
-    it('should return -1 when the value is not present', ->
-      assert.equal(-1, [1,2,3].indexOf(5))
-      assert.equal(-1, [1,2,3].indexOf(0))
+describe('TargetFractal', ->
+  describe('#zoomIn()', ->
+    it('should zoom in to 2 when initially zoomed in 2', ->
+      target_fractal.zoomIn(2)
+      target_fractal.get('zoom').should.be(2)
     )
   )
 )
+
+
+

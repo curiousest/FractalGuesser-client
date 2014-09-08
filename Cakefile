@@ -17,7 +17,9 @@ task 'functional_tests', 'Run the selenium webdriver tests in the file functiona
   exec 'mocha test/functional_tests/functional_tests.js', (err, stdout, stderr) ->
     throw err if err
     console.log stdout + stderr
-task 'unit_tests', 'Run the mocha tests in the file unit_tests.js in test/unit_tests', ->
-  exec 'mocha test/unit_tests/unit_tests.js', (err, stdout, stderr) ->
-    throw err if err
+task 'unit_tests', 'Run the mocha tests in the file unit_tests.html in test/unit_tests', ->
+  exec 'mocha-phantomjs test/unit_tests/unit_tests.html', (err, stdout, stderr) ->
+    if err
+      exec 'google-chrome --console test/unit_tests/unit_tests.html'
+      throw err
     console.log stdout + stderr

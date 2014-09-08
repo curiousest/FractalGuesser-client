@@ -16,12 +16,12 @@
     driver.findElement(webdriver.By.id('target-canvas'));
     target_zoom = driver.findElement(webdriver.By.id('target-zoom'));
     (target_zoom === null).should.not.be.ok;
-    target_zoom.html.should.containEql('x');
+    target_zoom.text.should.containEql('x');
     driver.findElement(webdriver.By.id('fractal-game'));
     driver.findElement(webdriver.By.id('fractal-canvas'));
     instructions = driver.findElement(webdriver.By.id('fractal-game-instructions'));
     (instructions === null).should.not.be.ok;
-    instructions.html().should.containEql('Click to zoom');
+    instructions.text.should.containEql('Click to zoom');
     return driver.quit();
   });
 
