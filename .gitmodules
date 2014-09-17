@@ -1,0 +1,3 @@
+[submodule "src/lib/mandelbrot-js"]
+	path = src/lib/mandelbrot-js
+	url = git://github.com/curiousest/mandelbrot-js.git

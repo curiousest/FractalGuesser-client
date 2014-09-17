@@ -6,27 +6,63 @@
   window.FractalManager = (function(_super) {
     __extends(_Class, _super);
 
-    function _Class() {
-      return _Class.__super__.constructor.apply(this, arguments);
+    _Class.prototype.top_left = {
+      x: 0,
+      y: 0
+    };
+
+    _Class.prototype.bottom_right = {
+      x: 0,
+      y: 0
+    };
+
+    _Class.prototype.default_top_left = {
+      x: 0,
+      y: 0
+    };
+
+    _Class.prototype.default_bottom_right = {
+      x: 0,
+      y: 0
+    };
+
+    _Class.prototype.entire_width = 0;
+
+    _Class.prototype.entire_height = 0;
+
+    _Class.prototype.canvas = 0;
+
+    _Class.prototype.color_picker = 0;
+
+    _Class.prototype.fractal_algorithm = 0;
+
+    _Class.prototype.fractal_range = 0;
+
+    function _Class(default_top_left, default_bottom_right) {
+      Backbone.Model.apply(this);
+      this.set('default_top_left', default_top_left);
+      this.set('default_bottom_right', default_bottom_right);
+      this.set('top_left', default_top_left);
+      this.set('bottom_right', default_bottom_right);
+      this.set('entire_width', default_bottom_right['x'] - default_top_left['x']);
+      this.set('entire_height', default_top_left['y'] - default_bottom_right['y']);
     }
 
-    _Class.prototype.defaults = {
-      top_left: {
-        x: 0,
-        y: 1
-      },
-      bottom_right: {
-        x: 1,
-        y: 0
-      }
+    _Class.prototype.drawCanvas = function() {
+      return 0;
     };
 
     _Class.prototype.setCanvas = function(new_top_left, zoom) {
       this.set('top_left', new_top_left);
       return this.set('bottom_right', {
-        x: this.get('top_left').x + 1 / zoom,
-        y: this.get('top_left').y - 1 / zoom
+        x: this.get('top_left').x + this.get('entire_width') / zoom,
+        y: this.get('top_left').y - this.get('entire_height') / zoom
       });
+    };
+
+    _Class.prototype.resetCanvas = function() {
+      this.set('top_left', this.get('default_top_left'));
+      return this.set('bottom_right', this.get('default_bottom_right'));
     };
 
     _Class.prototype.renderCanvas = function() {

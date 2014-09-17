@@ -30,15 +30,17 @@ window.ActiveFractalView = class extends Backbone.View
 
   constructor: (options={}) ->
     {@model, @classname} = options
-    $(document).on "ready", =>
-      @$el = $ '#active-fractal'
-      @render()
+    @$el = $ '#active-fractal'
+    @render()
     
   initialize: ->
     @model.on('change', @render, @)
     
   render_fractal: ->
-    return 'dud'
+    return "
+      <canvas id='canvasMandelbrot' width='400' height='400'> </canvas>
+      <canvas id='canvasControls' width='0' height='0'> </canvas>
+    "
   
   render: =>
     @$el.html(@template({
@@ -47,3 +49,4 @@ window.ActiveFractalView = class extends Backbone.View
       'max_zoom': @model.get('max_zoom')
       'fractal': @render_fractal()
     }))
+    draw($('#canvasMandelbrot')[0], [-2,1], [-1.5,1.5], pickColorHSV1, mandelbrotAlgorithm)

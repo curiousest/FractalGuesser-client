@@ -36,12 +36,8 @@
       }
       this.render = __bind(this.render, this);
       this.model = options.model, this.classname = options.classname;
-      $(document).on("ready", (function(_this) {
-        return function() {
-          _this.$el = $('#target-fractal');
-          return _this.render();
-        };
-      })(this));
+      this.$el = $('#target-fractal');
+      this.render();
     }
 
     _Class.prototype.initialize = function() {

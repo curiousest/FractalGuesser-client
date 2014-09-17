@@ -15,9 +15,8 @@ window.TargetFractalView = class extends Backbone.View
 
   constructor: (options={}) ->
     {@model, @classname} = options
-    $(document).on "ready", =>
-      @$el = $ '#target-fractal'
-      @render()
+    @$el = $('#target-fractal')
+    @render()
     
   initialize: ->
     @model.on('change', @render, @)    

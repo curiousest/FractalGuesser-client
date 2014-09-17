@@ -46,12 +46,8 @@
       }
       this.render = __bind(this.render, this);
       this.model = options.model, this.classname = options.classname;
-      $(document).on("ready", (function(_this) {
-        return function() {
-          _this.$el = $('#active-fractal');
-          return _this.render();
-        };
-      })(this));
+      this.$el = $('#active-fractal');
+      this.render();
     }
 
     _Class.prototype.initialize = function() {
@@ -59,16 +55,17 @@
     };
 
     _Class.prototype.render_fractal = function() {
-      return 'dud';
+      return "<canvas id='canvasMandelbrot' width='400' height='400'> </canvas> <canvas id='canvasControls' width='0' height='0'> </canvas>";
     };
 
     _Class.prototype.render = function() {
-      return this.$el.html(this.template({
+      this.$el.html(this.template({
         'zoom': this.model.get('zoom'),
         'level': this.model.get('level'),
         'max_zoom': this.model.get('max_zoom'),
         'fractal': this.render_fractal()
       }));
+      return draw($('#canvasMandelbrot')[0], [-2, 1], [-1.5, 1.5], pickColorHSV1, mandelbrotAlgorithm);
     };
 
     return _Class;
