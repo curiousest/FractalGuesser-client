@@ -38,14 +38,14 @@
 
     _Class.prototype.fractal_range = 0;
 
-    function _Class(default_top_left, default_bottom_right) {
+    function _Class(canvas_size) {
       Backbone.Model.apply(this);
-      this.set('default_top_left', default_top_left);
-      this.set('default_bottom_right', default_bottom_right);
-      this.set('top_left', default_top_left);
-      this.set('bottom_right', default_bottom_right);
-      this.set('entire_width', default_bottom_right['x'] - default_top_left['x']);
-      this.set('entire_height', default_top_left['y'] - default_bottom_right['y']);
+      this.set('default_top_left', canvas_size.top_left);
+      this.set('default_bottom_right', canvas_size.bottom_right);
+      this.set('top_left', canvas_size.top_left);
+      this.set('bottom_right', canvas_size.bottom_right);
+      this.set('entire_width', canvas_size.bottom_right.x - canvas_size.top_left.x);
+      this.set('entire_height', canvas_size.top_left.y - canvas_size.bottom_right.y);
     }
 
     _Class.prototype.drawCanvas = function() {

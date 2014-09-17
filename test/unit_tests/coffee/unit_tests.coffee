@@ -1,5 +1,6 @@
 target_fractal = new window.TargetFractal()
-active_fractal = new window.ActiveFractal()
+active_fractal = new window.ActiveFractal(MANDELBROT_CANVAS_SIZE)
+fractal_manager = new window.FractalManager(MANDELBROT_CANVAS_SIZE)
 
 describe('TargetFractal', ->
   describe('zoomIn(zoom_multiplier: int)', ->
@@ -40,12 +41,31 @@ describe('ActiveFractal', ->
       active_fractal.get('max_zoom').should.be.exactly(4)
     )
   )
+  
+  describe('render()', ->
+    it('should update the zoom, maxzoom, and level values that appear in html', ->
+      
+    )
+    it('should render the fractal on the canvas', ->
+      
+    )
+  )
+  describe('zoomIn(new_top_left)', ->
+    it('should zoom in to current zoom * zoom multiplier', ->
+      active_fractal.zoomIn({x: 0, y: 0})
+      active_fractal.get('zoom').should.be.exactly(4)
+      active_fractal.zoomIn({x: 0, y: 0})
+      active_fractal.get('zoom').should.be.exactly(16)
+    )
+    it('should update the canvas coordinates for the active fractal`s fractal manager', ->
+      active_fractal.startGame()
+      active_fractal.zoomIn({x: 0.5, y: 0.5})
+      active_fractal.fractal_manager.get('bottom_right').should.eql({x: 1.375, y: -0.125})
+    )
+  )
 )
 
 describe('FractalManager', ->  
-  
-  fractal_manager = new window.FractalManager({x: -2, y: 1}, {x: 1.5, y: -1.5})
-  
   describe('FractalManager(top_left_default: {x: int, y: int}, bottom_right_default: {x: int, y: int})', ->
     it('should set the initial top left and bottom right values', ->
       fractal_manager.get('top_left').should.eql({x: -2, y: 1})

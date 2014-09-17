@@ -11,16 +11,16 @@ window.FractalManager = class extends Backbone.Model
   fractal_algorithm: 0
   fractal_range: 0  
     
-  constructor: (default_top_left, default_bottom_right) ->
+  constructor: (canvas_size) ->
   
     Backbone.Model.apply(@)
   
-    @set 'default_top_left', default_top_left
-    @set 'default_bottom_right', default_bottom_right
-    @set 'top_left', default_top_left
-    @set 'bottom_right', default_bottom_right
-    @set 'entire_width', default_bottom_right['x'] - default_top_left['x']
-    @set 'entire_height', default_top_left['y'] - default_bottom_right['y']
+    @set 'default_top_left', canvas_size.top_left
+    @set 'default_bottom_right', canvas_size.bottom_right
+    @set 'top_left', canvas_size.top_left
+    @set 'bottom_right', canvas_size.bottom_right
+    @set 'entire_width', canvas_size.bottom_right.x - canvas_size.top_left.x
+    @set 'entire_height', canvas_size.top_left.y - canvas_size.bottom_right.y
     
   drawCanvas: ->
     #fractal.drawCanvas(canvas, fractal_range.x, fractal_range.y, color_picker, fractal_algorithm)
