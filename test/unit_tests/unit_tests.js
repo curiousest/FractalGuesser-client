@@ -2,19 +2,33 @@
 (function() {
   var active_fractal, fractal_manager, target_fractal;
 
-  target_fractal = new window.TargetFractal();
+  target_fractal = new window.TargetFractal(MANDELBROT_CANVAS_SIZE);
 
   active_fractal = new window.ActiveFractal(MANDELBROT_CANVAS_SIZE);
 
   fractal_manager = new window.FractalManager(MANDELBROT_CANVAS_SIZE);
 
   describe('TargetFractal', function() {
-    return describe('zoomIn(zoom_multiplier: int)', function() {
-      return it('should zoom in to current zoom * zoom multiplier', function() {
-        target_fractal.zoomIn(2);
-        target_fractal.get('zoom').should.be.exactly(2);
-        target_fractal.zoomIn(4);
-        return target_fractal.get('zoom').should.be.exactly(8);
+    return describe('zoomTo(top_left: {x,y}, zoom: int)', function() {
+      it('should set the fractal`s top_left coordinate', function() {
+        target_fractal.zoomTo({
+          x: 1,
+          y: 1
+        }, 4);
+        return target_fractal.fractal_manager.get('top_left').should.eql({
+          x: 1,
+          y: 1
+        });
+      });
+      return it('should set the fractal`s bottom_left coordinate', function() {
+        target_fractal.zoomTo({
+          x: 0.5,
+          y: 0.5
+        }, 4);
+        return target_fractal.fractal_manager.get('bottom_right').should.eql({
+          x: 1.375,
+          y: -0.125
+        });
       });
     });
   });
@@ -44,10 +58,6 @@
         active_fractal.get('zoom').should.be.exactly(1);
         return active_fractal.get('max_zoom').should.be.exactly(4);
       });
-    });
-    describe('render()', function() {
-      it('should update the zoom, maxzoom, and level values that appear in html', function() {});
-      return it('should render the fractal on the canvas', function() {});
     });
     return describe('zoomIn(new_top_left)', function() {
       it('should zoom in to current zoom * zoom multiplier', function() {
@@ -123,7 +133,7 @@
         });
       });
     });
-    describe('resetCanvas()', function() {
+    return describe('resetCanvas()', function() {
       return it('should set the top left and bottom right coordinates back to their default values', function() {
         fractal_manager.setCanvas({
           x: 0.5,
@@ -134,7 +144,6 @@
         return fractal_manager.get('top_left').should.eql(fractal_manager.get('default_top_left'));
       });
     });
-    return describe('renderCanvas()', function() {});
   });
 
 }).call(this);

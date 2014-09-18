@@ -12,7 +12,8 @@
       level: 1,
       max_zoom: 4,
       zoom_multiplier: 4,
-      fractal_manager: 0
+      fractal_manager: 0,
+      fractal_manager_view: 0
     };
 
     function _Class(canvas_size) {
@@ -20,6 +21,7 @@
       this.startLevel = __bind(this.startLevel, this);
       Backbone.Model.apply(this);
       this.fractal_manager = new window.FractalManager(canvas_size);
+      this.fractal_manager_view = new window.FractalManagerView(this.fractal_manager, '#active_mandelbrot');
     }
 
     _Class.prototype.startLevel = function(this_level) {
@@ -34,8 +36,10 @@
     };
 
     _Class.prototype.zoomIn = function(new_top_left) {
-      this.set('zoom', this.get('zoom') * this.get('zoom_multiplier'));
-      return this.fractal_manager.setCanvas(new_top_left, this.get('zoom'));
+      var new_zoom;
+      new_zoom = this.get('zoom') * this.get('zoom_multiplier');
+      this.fractal_manager.setCanvas(new_top_left, new_zoom);
+      return this.set('zoom', new_zoom);
     };
 
     return _Class;
@@ -45,7 +49,7 @@
   window.ActiveFractalView = (function(_super) {
     __extends(_Class, _super);
 
-    _Class.prototype.template = _.template("<div id='instructions'> Click to zoom in. Try to zoom in to the exact location of the fractal on the left. </div> <div class='canvas-header'> Current Level: <%= level %> clicks deep Zoom at target location: x<%= max_zoom %> </div> <div id='active-canvas'> <canvas id='canvasMandelbrot' width='600' height='500'> </canvas> <div id='active-zoom' class='zoom'><%= zoom %>x</div> </div>");
+    _Class.prototype.template = _.template("<div id='instructions'> Click to zoom in. Try to zoom in to the exact location of the fractal on the left. </div> <div class='canvas-header'> Current Level: <%= level %> clicks deep Zoom at target location: x<%= max_zoom %> </div> <div id='active-canvas'> <canvas id='active_mandelbrot' width='400' height='400'> </canvas> <div id='active-zoom' class='zoom'><%= zoom %>x</div> </div>");
 
     function _Class(options) {
       if (options == null) {
@@ -67,7 +71,7 @@
         'level': this.model.get('level'),
         'max_zoom': this.model.get('max_zoom')
       }));
-      return draw($('#canvasMandelbrot')[0], [-2, 1], [-1.5, 1.5], pickColorHSV1, mandelbrotAlgorithm);
+      return this.model.fractal_manager_view.render();
     };
 
     return _Class;

@@ -5,10 +5,12 @@ window.ActiveFractal = class extends Backbone.Model
     max_zoom: 4
     zoom_multiplier: 4
     fractal_manager: 0
+    fractal_manager_view: 0
     
   constructor: (canvas_size) ->
     Backbone.Model.apply(@)
     @fractal_manager = new window.FractalManager(canvas_size)
+    @fractal_manager_view = new window.FractalManagerView(@fractal_manager, '#active_mandelbrot')
     
   startLevel: (this_level) =>
     @fractal_manager.resetCanvas()
@@ -20,8 +22,9 @@ window.ActiveFractal = class extends Backbone.Model
     @startLevel(1)
   
   zoomIn: (new_top_left) ->
-    @set 'zoom', @get('zoom') * @get('zoom_multiplier')
-    @fractal_manager.setCanvas(new_top_left, @get('zoom'))
+    new_zoom = @get('zoom') * @get('zoom_multiplier')
+    @fractal_manager.setCanvas(new_top_left, new_zoom)
+    @set 'zoom', new_zoom
 
 window.ActiveFractalView = class extends Backbone.View
   template: _.template(
@@ -33,7 +36,7 @@ window.ActiveFractalView = class extends Backbone.View
       Zoom at target location: x<%= max_zoom %>
     </div>
     <div id='active-canvas'>
-        <canvas id='canvasMandelbrot' width='600' height='500'> </canvas>
+        <canvas id='active_mandelbrot' width='400' height='400'> </canvas>
         <div id='active-zoom' class='zoom'><%= zoom %>x</div>
     </div>")
 
@@ -51,4 +54,4 @@ window.ActiveFractalView = class extends Backbone.View
       'level': @model.get('level')
       'max_zoom': @model.get('max_zoom')
     }))
-    draw($('#canvasMandelbrot')[0], [-2,1], [-1.5,1.5], pickColorHSV1, mandelbrotAlgorithm)
+    @model.fractal_manager_view.render()

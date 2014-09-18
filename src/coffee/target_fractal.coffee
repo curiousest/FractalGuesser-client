@@ -1,15 +1,22 @@
 window.TargetFractal = class extends Backbone.Model
   defaults:
     zoom: 1
-    coordinates: [0,0]
-  
-  zoomIn: (zoomIncrease) =>
-    @set 'zoom', @get('zoom') * zoomIncrease
+    fractal_manager: 0
+    fractal_manager_view: 0
+
+  constructor: (canvas_size) ->
+    Backbone.Model.apply(@)
+    @fractal_manager = new window.FractalManager(canvas_size)
+    @fractal_manager_view = new window.FractalManagerView(@fractal_manager, '#target_mandelbrot')
+    
+  zoomTo: (top_left, new_zoom) ->
+    @fractal_manager.setCanvas(top_left, new_zoom)
+    @set 'zoom', new_zoom
 
 window.TargetFractalView = class extends Backbone.View
-  template: _.template(
-    "<div id='target-canvas'>
-        <%= fractal %>
+  template: _.template("
+    <div id='target-canvas'>
+        <canvas id='target_mandelbrot' width='400' height='400'> </canvas>
         <div id='target-zoom' class='zoom'><%= zoom %>x</div>
     </div>")
 
@@ -20,9 +27,7 @@ window.TargetFractalView = class extends Backbone.View
     
   initialize: ->
     @model.on('change', @render, @)    
-    
-  render_fractal: ->
-    return 'dud'
   
   render: =>
-    @$el.html(@template({'zoom':@model.get('zoom'), 'fractal': @render_fractal()}))
+    @$el.html(@template({'zoom':@model.get('zoom')}))
+    @model.fractal_manager_view.render()
