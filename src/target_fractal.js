@@ -48,9 +48,12 @@
     };
 
     _Class.prototype.render = function() {
-      this.$el.html(this.template({
+      return this.$el.html(this.template({
         'zoom': this.model.get('zoom')
       }));
+    };
+
+    _Class.prototype.drawFractal = function() {
       return this.model.fractal_manager_view.render();
     };
 

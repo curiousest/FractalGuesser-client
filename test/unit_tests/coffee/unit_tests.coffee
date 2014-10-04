@@ -1,5 +1,6 @@
 target_fractal = new window.TargetFractal(MANDELBROT_CANVAS_SIZE)
 active_fractal = new window.ActiveFractal(MANDELBROT_CANVAS_SIZE)
+active_fractal_view = new window.ActiveFractalView({model:active_fractal})
 fractal_manager = new window.FractalManager(MANDELBROT_CANVAS_SIZE)
 
 describe('TargetFractal', ->
@@ -55,6 +56,32 @@ describe('ActiveFractal', ->
       active_fractal.startGame()
       active_fractal.zoomIn({x: 0.5, y: 0.5})
       active_fractal.fractal_manager.get('bottom_right').should.eql({x: 1.375, y: -0.125})
+    )
+  )
+)
+
+describe('ActiveFractalView (with mandelbrot canvas size and 4x4 sections)', ->
+
+  describe('getCanvasSection(coordinate: {x:int, y:int})', ->
+    it('should return the top-left section for {0,0}', ->
+      active_fractal_view.getCanvasSection({x:0, y:0}).should.eql({x:0, y:0})
+    )
+    it('should return the bottom-left section for {399, 399}', ->
+      active_fractal_view.getCanvasSection({x:399, y:399}).should.eql({x:3, y:3})
+    )
+    it('should return the appropriate section for {250, 350}', ->
+      active_fractal_view.getCanvasSection({x:250, y:350}).should.eql({x:2, y:3})
+    )
+  )
+  describe('getCanvasSectionCoordinates(section: {x:int, y:int})', ->
+    it('should return the coordinates for the top left section at {0,0}', ->
+      active_fractal_view.getCanvasSectionCoordinates({x:0,y:0}).should.eql({top_left: {x:0, y:0}, bottom_right:{x:100, y:100}})
+    )
+    it('should return the bottom-left section for {3, 3}', ->
+      active_fractal_view.getCanvasSectionCoordinates({x:3,y:3}).should.eql({top_left: {x:300, y:300}, bottom_right:{x:400, y:400}})
+    )
+    it('should return the appropriate section for {2, 3}', ->
+      active_fractal_view.getCanvasSectionCoordinates({x:2,y:3}).should.eql({top_left: {x:200, y:300}, bottom_right:{x:300, y:400}})
     )
   )
 )

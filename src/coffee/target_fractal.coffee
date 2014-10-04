@@ -30,4 +30,6 @@ window.TargetFractalView = class extends Backbone.View
   
   render: =>
     @$el.html(@template({'zoom':@model.get('zoom')}))
+  
+  drawFractal: ->
     @model.fractal_manager_view.render()
