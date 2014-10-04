@@ -33,14 +33,21 @@
   window.FractalSectionView = (function(_super) {
     __extends(_Class, _super);
 
-    function _Class(model) {
-      this.model = model;
+    function _Class() {
       this.render = __bind(this.render, this);
-      _Class.__super__.constructor.apply(this, arguments);
-      this.$el = document.createElement('DIV');
-      this.$el.setAttribute('style', 'top: ' + this.model.top_left.y + 'px; ' + 'left: ' + this.model.top_left.x + 'px; ' + 'border: 1px; ' + 'border-style: solid;' + 'min-width: ' + this.model.width + 'px; ' + 'min-height: ' + this.model.height + 'px; ' + 'position: absolute;');
-      this.$el.innerHTML = '&nbsp';
+      this.initialize = __bind(this.initialize, this);
+      return _Class.__super__.constructor.apply(this, arguments);
     }
+
+    _Class.prototype.initialize = function() {
+      this.el.setAttribute('style', 'top: ' + this.model.top_left.y + 'px; ' + 'left: ' + this.model.top_left.x + 'px; ' + 'border: 1px; ' + 'border-style: solid;' + 'min-width: ' + this.model.width + 'px; ' + 'min-height: ' + this.model.height + 'px; ' + 'position: absolute;');
+      this.$el.html('&nbsp');
+      return this.$el.on('click', (function(_this) {
+        return function() {
+          return _this.model.on_click_function(_this.model.top_left);
+        };
+      })(this));
+    };
 
     _Class.prototype.render = function() {
       return this.$el;
@@ -126,6 +133,7 @@
     };
 
     function _Class(canvas_size) {
+      this.zoomIn = __bind(this.zoomIn, this);
       this.startGame = __bind(this.startGame, this);
       this.startLevel = __bind(this.startLevel, this);
       Backbone.Model.apply(this);
@@ -196,7 +204,7 @@
       this.fractal_sections = new window.FractalSections({
         width: this.CANVAS_PIXEL_WIDTH,
         height: this.CANVAS_PIXEL_HEIGHT,
-        on_click_function: 0
+        on_click_function: this.model.zoomIn
       });
       this.fractal_sections_view = new window.FractalSectionsView(this.fractal_sections, '#fractal-sections');
       Backbone.View.apply(this);
@@ -204,7 +212,8 @@
 
     _Class.prototype.initialize = function() {
       this.fractal_sections_view.initialize();
-      return this.model.on('change', this.render, this);
+      this.model.on('change', this.render, this);
+      return this.render();
     };
 
     _Class.prototype.getCanvasSection = function(coordinate) {
@@ -231,6 +240,7 @@
     };
 
     _Class.prototype.render = function() {
+      this.drawFractal();
       return this.$el.html(this.template({
         'zoom': this.model.get('zoom'),
         'level': this.model.get('level'),

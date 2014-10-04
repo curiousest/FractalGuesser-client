@@ -12,11 +12,9 @@ window.FractalSection = class extends Backbone.Model
       @on_click_function} = options
       
 window.FractalSectionView = class extends Backbone.View
-  
-  constructor: (@model) ->
-    super
-    @$el = document.createElement('DIV')
-    @$el.setAttribute('style',
+
+  initialize: =>
+    @el.setAttribute('style',
       'top: ' + @model.top_left.y + 'px; ' +
       'left: ' + @model.top_left.x + 'px; ' +
       'border: 1px; ' +
@@ -25,7 +23,8 @@ window.FractalSectionView = class extends Backbone.View
       'min-height: ' + @model.height + 'px; '+
       'position: absolute;'
     )
-    @$el.innerHTML = '&nbsp'
+    @$el.html('&nbsp')
+    @$el.on('click', =>@model.on_click_function(@model.top_left))
 
   render: => return @$el
   
@@ -88,7 +87,7 @@ window.ActiveFractal = class extends Backbone.Model
   startGame: =>
     @startLevel(1)
   
-  zoomIn: (new_top_left) ->
+  zoomIn: (new_top_left) =>
     new_zoom = @get('zoom') * @get('zoom_multiplier')
     @fractal_manager.setCanvas(new_top_left, new_zoom)
     @set 'zoom', new_zoom
@@ -129,7 +128,7 @@ window.ActiveFractalView = class extends Backbone.View
     @fractal_sections = new window.FractalSections({
       width: @CANVAS_PIXEL_WIDTH
       height: @CANVAS_PIXEL_HEIGHT
-      on_click_function: 0
+      on_click_function: @model.zoomIn
     })
     @fractal_sections_view = new window.FractalSectionsView(@fractal_sections, '#fractal-sections')
     Backbone.View.apply(@)
@@ -137,6 +136,7 @@ window.ActiveFractalView = class extends Backbone.View
   initialize: =>
     @fractal_sections_view.initialize()
     @model.on('change', @render, @)
+    @render()
     
   getCanvasSection: (coordinate) =>
     x_section = Math.floor(coordinate.x / @x_section_size)
@@ -156,6 +156,7 @@ window.ActiveFractalView = class extends Backbone.View
     }
     
   render: =>
+    @drawFractal()
     @$el.html(@template({
       'zoom':@model.get('zoom')
       'level': @model.get('level')

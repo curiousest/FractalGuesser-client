@@ -12,8 +12,6 @@
     model: active
   });
 
-  window.activeView.drawFractal();
-
   window.targetView.drawFractal();
 
 }).call(this);
