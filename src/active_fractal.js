@@ -125,6 +125,14 @@
   window.ActiveFractal = (function(_super) {
     __extends(_Class, _super);
 
+    _Class.prototype.SECTION_ROW_COUNT = 4;
+
+    _Class.prototype.SECTION_COLUMN_COUNT = 4;
+
+    _Class.prototype.CANVAS_PIXEL_WIDTH = 400;
+
+    _Class.prototype.CANVAS_PIXEL_HEIGHT = 285;
+
     _Class.prototype.defaults = {
       zoom: 1,
       level: 1,
@@ -155,7 +163,7 @@
     _Class.prototype.zoomIn = function(new_top_left) {
       var new_zoom;
       new_zoom = this.get('zoom') * this.get('zoom_multiplier');
-      this.fractal_manager.setCanvas(new_top_left, new_zoom);
+      this.fractal_manager.setCanvas(new_top_left, new_zoom, this.get('zoom'), this.CANVAS_PIXEL_WIDTH, this.CANVAS_PIXEL_HEIGHT);
       return this.set('zoom', new_zoom);
     };
 
@@ -167,18 +175,6 @@
     __extends(_Class, _super);
 
     _Class.prototype.$canvas_el = 0;
-
-    _Class.prototype.SECTION_ROW_COUNT = 4;
-
-    _Class.prototype.SECTION_COLUMN_COUNT = 4;
-
-    _Class.prototype.CANVAS_PIXEL_WIDTH = 400;
-
-    _Class.prototype.CANVAS_PIXEL_HEIGHT = 400;
-
-    _Class.prototype.x_section_size = 0;
-
-    _Class.prototype.y_section_size = 0;
 
     _Class.prototype.current_section = {
       x: 0,
@@ -192,18 +188,14 @@
         options = {};
       }
       this.render = __bind(this.render, this);
-      this.getCanvasSectionCoordinates = __bind(this.getCanvasSectionCoordinates, this);
-      this.getCanvasSection = __bind(this.getCanvasSection, this);
       this.initialize = __bind(this.initialize, this);
       this.model = options.model, this.classname = options.classname;
       this.$el = $('#active-fractal');
       this.render();
       this.$canvas_el = $('#active_mandelbrot');
-      this.x_section_size = this.CANVAS_PIXEL_WIDTH / this.SECTION_COLUMN_COUNT;
-      this.y_section_size = this.CANVAS_PIXEL_HEIGHT / this.SECTION_ROW_COUNT;
       this.fractal_sections = new window.FractalSections({
-        width: this.CANVAS_PIXEL_WIDTH,
-        height: this.CANVAS_PIXEL_HEIGHT,
+        width: this.model.CANVAS_PIXEL_WIDTH,
+        height: this.model.CANVAS_PIXEL_HEIGHT,
         on_click_function: this.model.zoomIn
       });
       this.fractal_sections_view = new window.FractalSectionsView(this.fractal_sections, '#fractal-sections');
@@ -216,37 +208,14 @@
       return this.render();
     };
 
-    _Class.prototype.getCanvasSection = function(coordinate) {
-      var x_section, y_section;
-      x_section = Math.floor(coordinate.x / this.x_section_size);
-      y_section = Math.floor(coordinate.y / this.y_section_size);
-      return {
-        x: x_section,
-        y: y_section
-      };
-    };
-
-    _Class.prototype.getCanvasSectionCoordinates = function(section) {
-      return {
-        top_left: {
-          x: Math.ceil(section.x * this.x_section_size),
-          y: Math.ceil(section.y * this.y_section_size)
-        },
-        bottom_right: {
-          x: Math.ceil((section.x + 1) * this.x_section_size),
-          y: Math.ceil((section.y + 1) * this.y_section_size)
-        }
-      };
-    };
-
     _Class.prototype.render = function() {
       this.drawFractal();
       return this.$el.html(this.template({
         'zoom': this.model.get('zoom'),
         'level': this.model.get('level'),
         'max_zoom': this.model.get('max_zoom'),
-        'CANVAS_PIXEL_WIDTH': this.CANVAS_PIXEL_WIDTH,
-        'CANVAS_PIXEL_HEIGHT': this.CANVAS_PIXEL_HEIGHT
+        'CANVAS_PIXEL_WIDTH': this.model.CANVAS_PIXEL_WIDTH,
+        'CANVAS_PIXEL_HEIGHT': this.model.CANVAS_PIXEL_HEIGHT
       }));
     };
 

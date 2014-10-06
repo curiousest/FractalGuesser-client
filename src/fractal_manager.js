@@ -49,11 +49,20 @@
       this.set('entire_height', canvas_size.top_left.y - canvas_size.bottom_right.y);
     }
 
-    _Class.prototype.setCanvas = function(new_top_left, zoom) {
-      this.set('top_left', new_top_left);
+    _Class.prototype.setCanvas = function(new_top_left, new_zoom, old_zoom, canvas_pixel_width, canvas_pixel_height) {
+      var offset_from_old_top_left, old_top_left;
+      offset_from_old_top_left = {
+        x: (new_top_left.x / canvas_pixel_width) * this.get('entire_width') / old_zoom,
+        y: (new_top_left.y / canvas_pixel_height) * this.get('entire_height') / old_zoom
+      };
+      old_top_left = this.get('top_left');
+      this.set('top_left', {
+        x: old_top_left.x + offset_from_old_top_left.x,
+        y: old_top_left.y - offset_from_old_top_left.y
+      });
       return this.set('bottom_right', {
-        x: this.get('top_left').x + this.get('entire_width') / zoom,
-        y: this.get('top_left').y - this.get('entire_height') / zoom
+        x: old_top_left.x + offset_from_old_top_left.x + this.get('entire_width') / new_zoom,
+        y: old_top_left.y - offset_from_old_top_left.y - this.get('entire_height') / new_zoom
       });
     };
 
@@ -80,7 +89,13 @@
     }
 
     _Class.prototype.render = function() {
-      return draw($(this.canvas_selector)[0], this.model.get('top_left'), this.model.get('bottom_right'), this.model.color_picker, this.model.fractal_algorithm);
+      return draw($(this.canvas_selector)[0], {
+        x: this.model.get('top_left').x,
+        y: this.model.get('bottom_right').x
+      }, {
+        x: this.model.get('top_left').y,
+        y: this.model.get('bottom_right').y
+      }, this.model.color_picker, this.model.fractal_algorithm);
     };
 
     return _Class;

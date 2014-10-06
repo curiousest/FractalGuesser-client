@@ -22,9 +22,20 @@ window.FractalManager = class extends Backbone.Model
     @set 'entire_width', canvas_size.bottom_right.x - canvas_size.top_left.x
     @set 'entire_height', canvas_size.top_left.y - canvas_size.bottom_right.y
     
-  setCanvas: (new_top_left, zoom) ->
-    @set 'top_left', new_top_left
-    @set 'bottom_right', {x: @get('top_left').x + @get('entire_width')/zoom, y: @get('top_left').y - @get('entire_height')/zoom}
+  setCanvas: (new_top_left, new_zoom, old_zoom, canvas_pixel_width, canvas_pixel_height) ->
+    offset_from_old_top_left = {
+      x: (new_top_left.x / canvas_pixel_width) * @get('entire_width')/old_zoom
+      y: (new_top_left.y / canvas_pixel_height) * @get('entire_height')/old_zoom
+    }
+    old_top_left = @get('top_left')
+    @set 'top_left', {
+      x: old_top_left.x + offset_from_old_top_left.x
+      y: old_top_left.y - offset_from_old_top_left.y
+    }
+    @set 'bottom_right', {
+      x: old_top_left.x + offset_from_old_top_left.x + @get('entire_width')/new_zoom
+      y: old_top_left.y - offset_from_old_top_left.y - @get('entire_height')/new_zoom
+    }
     
   resetCanvas: ->
     @set 'top_left', @get 'default_top_left'
@@ -37,4 +48,16 @@ window.FractalManagerView = class extends Backbone.View
   constructor: (@model, @canvas_selector) -> 
   
   render: =>
-    draw($(@canvas_selector)[0], @model.get('top_left'), @model.get('bottom_right'), @model.color_picker, @model.fractal_algorithm)
+    draw(
+      $(@canvas_selector)[0]
+      {
+        x: @model.get('top_left').x
+        y: @model.get('bottom_right').x
+      }
+      {
+        x: @model.get('top_left').y
+        y: @model.get('bottom_right').y
+      }
+      @model.color_picker
+      @model.fractal_algorithm
+    )

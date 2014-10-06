@@ -67,6 +67,10 @@ window.FractalSectionsView = class extends Backbone.View
     )
 
 window.ActiveFractal = class extends Backbone.Model
+  SECTION_ROW_COUNT: 4
+  SECTION_COLUMN_COUNT: 4
+  CANVAS_PIXEL_WIDTH: 400
+  CANVAS_PIXEL_HEIGHT: 285
   defaults:
     zoom: 1
     level: 1
@@ -89,18 +93,12 @@ window.ActiveFractal = class extends Backbone.Model
   
   zoomIn: (new_top_left) =>
     new_zoom = @get('zoom') * @get('zoom_multiplier')
-    @fractal_manager.setCanvas(new_top_left, new_zoom)
+    @fractal_manager.setCanvas(new_top_left, new_zoom, @get('zoom'), @CANVAS_PIXEL_WIDTH, @CANVAS_PIXEL_HEIGHT)
     @set 'zoom', new_zoom
 
 window.ActiveFractalView = class extends Backbone.View
   
   $canvas_el: 0
-  SECTION_ROW_COUNT: 4
-  SECTION_COLUMN_COUNT: 4
-  CANVAS_PIXEL_WIDTH: 400
-  CANVAS_PIXEL_HEIGHT: 400
-  x_section_size: 0
-  y_section_size: 0
   current_section: {x:0, y:0}
   
   template: _.template(
@@ -123,11 +121,10 @@ window.ActiveFractalView = class extends Backbone.View
     @$el = $ '#active-fractal'
     @render()
     @$canvas_el = $ '#active_mandelbrot'
-    @x_section_size = @CANVAS_PIXEL_WIDTH / @SECTION_COLUMN_COUNT
-    @y_section_size = @CANVAS_PIXEL_HEIGHT / @SECTION_ROW_COUNT
+    
     @fractal_sections = new window.FractalSections({
-      width: @CANVAS_PIXEL_WIDTH
-      height: @CANVAS_PIXEL_HEIGHT
+      width: @model.CANVAS_PIXEL_WIDTH
+      height: @model.CANVAS_PIXEL_HEIGHT
       on_click_function: @model.zoomIn
     })
     @fractal_sections_view = new window.FractalSectionsView(@fractal_sections, '#fractal-sections')
@@ -138,31 +135,14 @@ window.ActiveFractalView = class extends Backbone.View
     @model.on('change', @render, @)
     @render()
     
-  getCanvasSection: (coordinate) =>
-    x_section = Math.floor(coordinate.x / @x_section_size)
-    y_section = Math.floor(coordinate.y / @y_section_size)
-    return {x: x_section, y: y_section}
-  
-  getCanvasSectionCoordinates: (section) =>
-    return {
-      top_left: {
-        x: Math.ceil(section.x * @x_section_size)
-        y: Math.ceil(section.y * @y_section_size)
-      }
-      bottom_right: {
-        x: Math.ceil((section.x + 1) * @x_section_size)
-        y: Math.ceil((section.y + 1) * @y_section_size)
-      }
-    }
-    
   render: =>
     @drawFractal()
     @$el.html(@template({
       'zoom':@model.get('zoom')
       'level': @model.get('level')
       'max_zoom': @model.get('max_zoom')
-      'CANVAS_PIXEL_WIDTH': @CANVAS_PIXEL_WIDTH
-      'CANVAS_PIXEL_HEIGHT': @CANVAS_PIXEL_HEIGHT
+      'CANVAS_PIXEL_WIDTH': @model.CANVAS_PIXEL_WIDTH
+      'CANVAS_PIXEL_HEIGHT': @model.CANVAS_PIXEL_HEIGHT
     }))
   
   drawFractal: ->
