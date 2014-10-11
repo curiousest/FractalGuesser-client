@@ -40,6 +40,7 @@
     }
 
     _Class.prototype.initialize = function() {
+      this.el.classList.add('fractal-section');
       this.el.setAttribute('style', 'top: ' + this.model.top_left.y + 'px; ' + 'left: ' + this.model.top_left.x + 'px; ' + 'border: 1px; ' + 'border-style: solid;' + 'min-width: ' + this.model.width + 'px; ' + 'min-height: ' + this.model.height + 'px; ' + 'position: absolute;');
       this.$el.html('&nbsp');
       return this.$el.on('click', (function(_this) {
@@ -99,23 +100,33 @@
   window.FractalSectionsView = (function(_super) {
     __extends(_Class, _super);
 
-    function _Class(collection, $el) {
+    _Class.prototype.sectionList = [];
+
+    function _Class(collection) {
       this.collection = collection;
-      this.$el = $el;
+      this.render = __bind(this.render, this);
       this.initialize = __bind(this.initialize, this);
+      Backbone.View.apply(this);
     }
 
     _Class.prototype.initialize = function() {
-      this.$el = $(this.$el);
       return this.collection.forEach((function(_this) {
         return function(section) {
-          var sectionView;
-          sectionView = new window.FractalSectionView({
+          return _this.sectionList.push(new window.FractalSectionView({
             model: section
-          });
-          return _this.$el.append(sectionView.render());
+          }));
         };
       })(this));
+    };
+
+    _Class.prototype.render = function() {
+      var section, _i, _len, _ref;
+      _ref = this.sectionList;
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        section = _ref[_i];
+        this.$el.append(section.render());
+      }
+      return this.$el;
     };
 
     return _Class;
@@ -143,10 +154,10 @@
     function _Class(canvas_size) {
       this.zoomIn = __bind(this.zoomIn, this);
       this.startGame = __bind(this.startGame, this);
+      this.endLevel = __bind(this.endLevel, this);
       this.startLevel = __bind(this.startLevel, this);
       Backbone.Model.apply(this);
-      this.fractal_manager = new window.FractalManager(canvas_size);
-      this.fractal_manager_view = new window.FractalManagerView(this.fractal_manager, '#active_mandelbrot');
+      this.fractal_manager = new window.FractalManager(canvas_size, this.CANVAS_PIXEL_WIDTH, this.CANVAS_PIXEL_HEIGHT);
     }
 
     _Class.prototype.startLevel = function(this_level) {
@@ -156,6 +167,10 @@
       return this.set('max_zoom', Math.pow(this.get('zoom_multiplier'), this_level));
     };
 
+    _Class.prototype.endLevel = function() {
+      return console.log('complete me');
+    };
+
     _Class.prototype.startGame = function() {
       return this.startLevel(1);
     };
@@ -163,7 +178,10 @@
     _Class.prototype.zoomIn = function(new_top_left) {
       var new_zoom;
       new_zoom = this.get('zoom') * this.get('zoom_multiplier');
-      this.fractal_manager.setCanvas(new_top_left, new_zoom, this.get('zoom'), this.CANVAS_PIXEL_WIDTH, this.CANVAS_PIXEL_HEIGHT);
+      this.fractal_manager.setCanvas(new_top_left, new_zoom, this.get('zoom'));
+      if (new_zoom >= this.get('max_zoom')) {
+        this.endLevel();
+      }
       return this.set('zoom', new_zoom);
     };
 
@@ -181,7 +199,7 @@
       y: 0
     };
 
-    _Class.prototype.template = _.template("<div id='instructions'> Click to zoom in. Try to zoom in to the exact location of the fractal on the left. </div> <div class='canvas-header'> Current Level: <%= level %> clicks deep Zoom at target location: x<%= max_zoom %> </div> <div id='active-canvas' style='position:relative;'> <canvas id='active_mandelbrot' style='position:absolute;' width='<%= CANVAS_PIXEL_WIDTH %>' height='<%= CANVAS_PIXEL_HEIGHT %>'> </canvas> <div id='fractal-sections' /> <div id='active-zoom' class='zoom'><%= zoom %>x</div> </div>");
+    _Class.prototype.template = _.template("<div id='fractal-game-message'> Click to zoom in. Try to zoom in to the exact location of the fractal on the left. </div> <div class='canvas-header'> Current zoom: <span id='active-zoom' class='zoom'>x<%= zoom %></span> <br/> Target zoom: <span id='target-zoom' class='zoom'>x<%= max_zoom %></span> <br/> Clicks remaining: <span id='remaining-clicks'><%= remaining_clicks %></span> </div> <div id='active-canvas' style='position:relative;'> <div class='active-mandelbrot' /> <div class='fractal-sections' /> </div>");
 
     function _Class(options) {
       if (options == null) {
@@ -190,37 +208,39 @@
       this.render = __bind(this.render, this);
       this.initialize = __bind(this.initialize, this);
       this.model = options.model, this.classname = options.classname;
-      this.$el = $('#active-fractal');
-      this.render();
-      this.$canvas_el = $('#active_mandelbrot');
       this.fractal_sections = new window.FractalSections({
         width: this.model.CANVAS_PIXEL_WIDTH,
         height: this.model.CANVAS_PIXEL_HEIGHT,
         on_click_function: this.model.zoomIn
       });
-      this.fractal_sections_view = new window.FractalSectionsView(this.fractal_sections, '#fractal-sections');
+      this.fractal_sections_view = new window.FractalSectionsView(this.fractal_sections);
+      this.fractal_manager_view = new window.FractalManagerView(this.model.fractal_manager);
       Backbone.View.apply(this);
     }
 
     _Class.prototype.initialize = function() {
-      this.fractal_sections_view.initialize();
+      this.$el = $('#active-fractal');
       this.model.on('change', this.render, this);
-      return this.render();
+      this.render();
+      this.fractal_sections_view.initialize();
+      return this.fractal_manager_view.initialize();
+    };
+
+    _Class.prototype.assign = function(view, selector) {
+      view.setElement($(selector));
+      return view.render();
     };
 
     _Class.prototype.render = function() {
-      this.drawFractal();
-      return this.$el.html(this.template({
+      this.$el.html(this.template({
         'zoom': this.model.get('zoom'),
-        'level': this.model.get('level'),
         'max_zoom': this.model.get('max_zoom'),
+        'remaining_clicks': this.model.get('max_zoom') / this.model.get('zoom_multiplier') - Math.floor(this.model.get('zoom') / this.model.get('zoom_multiplier')),
         'CANVAS_PIXEL_WIDTH': this.model.CANVAS_PIXEL_WIDTH,
         'CANVAS_PIXEL_HEIGHT': this.model.CANVAS_PIXEL_HEIGHT
       }));
-    };
-
-    _Class.prototype.drawFractal = function() {
-      return this.model.fractal_manager_view.render();
+      this.assign(this.fractal_manager_view, '.active-mandelbrot');
+      return this.assign(this.fractal_sections_view, '.fractal-sections');
     };
 
     return _Class;

@@ -7,29 +7,28 @@
   window.FractalManager = (function(_super) {
     __extends(_Class, _super);
 
-    _Class.prototype.top_left = {
-      x: 0,
-      y: 0
+    _Class.prototype["default"] = {
+      top_left: {
+        x: 0,
+        y: 0
+      },
+      bottom_right: {
+        x: 0,
+        y: 0
+      },
+      default_top_left: {
+        x: 0,
+        y: 0
+      },
+      default_bottom_right: {
+        x: 0,
+        y: 0
+      },
+      entire_width: 0,
+      entire_height: 0,
+      pixel_width: 0,
+      pixel_height: 0
     };
-
-    _Class.prototype.bottom_right = {
-      x: 0,
-      y: 0
-    };
-
-    _Class.prototype.default_top_left = {
-      x: 0,
-      y: 0
-    };
-
-    _Class.prototype.default_bottom_right = {
-      x: 0,
-      y: 0
-    };
-
-    _Class.prototype.entire_width = 0;
-
-    _Class.prototype.entire_height = 0;
 
     _Class.prototype.canvas = 0;
 
@@ -39,7 +38,7 @@
 
     _Class.prototype.fractal_range = 0;
 
-    function _Class(canvas_size) {
+    function _Class(canvas_size, pixel_width, pixel_height) {
       Backbone.Model.apply(this);
       this.set('default_top_left', canvas_size.top_left);
       this.set('default_bottom_right', canvas_size.bottom_right);
@@ -47,13 +46,15 @@
       this.set('bottom_right', canvas_size.bottom_right);
       this.set('entire_width', canvas_size.bottom_right.x - canvas_size.top_left.x);
       this.set('entire_height', canvas_size.top_left.y - canvas_size.bottom_right.y);
+      this.set('pixel_width', pixel_width);
+      this.set('pixel_height', pixel_height);
     }
 
-    _Class.prototype.setCanvas = function(new_top_left, new_zoom, old_zoom, canvas_pixel_width, canvas_pixel_height) {
+    _Class.prototype.setCanvas = function(new_top_left, new_zoom, old_zoom) {
       var offset_from_old_top_left, old_top_left;
       offset_from_old_top_left = {
-        x: (new_top_left.x / canvas_pixel_width) * this.get('entire_width') / old_zoom,
-        y: (new_top_left.y / canvas_pixel_height) * this.get('entire_height') / old_zoom
+        x: (new_top_left.x / this.get('pixel_width')) * this.get('entire_width') / old_zoom,
+        y: (new_top_left.y / this.get('pixel_height')) * this.get('entire_height') / old_zoom
       };
       old_top_left = this.get('top_left');
       this.set('top_left', {
@@ -78,24 +79,27 @@
   window.FractalManagerView = (function(_super) {
     __extends(_Class, _super);
 
-    _Class.prototype.defaults = {
-      canvas_selector: 0
-    };
+    _Class.prototype.template = _.template("<canvas style='position:absolute;' width='<%= pixel_width %>' height='<%= pixel_height %>'> </canvas>");
 
-    function _Class(model, canvas_selector) {
+    function _Class(model) {
       this.model = model;
-      this.canvas_selector = canvas_selector;
       this.render = __bind(this.render, this);
+      Backbone.View.apply(this);
     }
 
     _Class.prototype.render = function() {
-      return draw($(this.canvas_selector)[0], {
+      this.$el.html(this.template({
+        'pixel_width': this.model.get('pixel_width'),
+        'pixel_height': this.model.get('pixel_height')
+      }));
+      draw(this.$el.find('canvas')[0], {
         x: this.model.get('top_left').x,
         y: this.model.get('bottom_right').x
       }, {
         x: this.model.get('top_left').y,
         y: this.model.get('bottom_right').y
       }, this.model.color_picker, this.model.fractal_algorithm);
+      return this.$el;
     };
 
     return _Class;

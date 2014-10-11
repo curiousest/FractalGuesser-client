@@ -25,7 +25,7 @@ task 'minify', 'Minify the resulting application file after build', ->
     console.log stdout + stderr
     
 task 'functional_tests', 'Run the selenium webdriver tests in the file functional_tests.js in test/functional_tests', ->
-  exec 'mocha test/functional_tests/functional_tests.js', (err, stdout, stderr) ->
+  exec 'node test/functional_tests/functional_tests.js', (err, stdout, stderr) ->
     throw err if err
     console.log stdout + stderr
     

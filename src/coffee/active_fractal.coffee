@@ -14,6 +14,7 @@ window.FractalSection = class extends Backbone.Model
 window.FractalSectionView = class extends Backbone.View
 
   initialize: =>
+    @el.classList.add('fractal-section')
     @el.setAttribute('style',
       'top: ' + @model.top_left.y + 'px; ' +
       'left: ' + @model.top_left.x + 'px; ' +
@@ -56,15 +57,20 @@ window.FractalSections = class extends Backbone.Collection
         @add(fractalSection)         
 
 window.FractalSectionsView = class extends Backbone.View 
-  constructor: (@collection, @$el) ->
+  sectionList: []
+
+  constructor: (@collection) ->
+    Backbone.View.apply(@)  
   
   initialize: =>
-    @$el = $(@$el)
     @collection.forEach(
       (section) =>
-        sectionView = new window.FractalSectionView({model: section})
-        @$el.append(sectionView.render())
+        @sectionList.push(new window.FractalSectionView({model: section}))
     )
+  
+  render: =>
+    @$el.append(section.render()) for section in @sectionList
+    return @$el
 
 window.ActiveFractal = class extends Backbone.Model
   SECTION_ROW_COUNT: 4
@@ -79,8 +85,7 @@ window.ActiveFractal = class extends Backbone.Model
     
   constructor: (canvas_size) ->
     Backbone.Model.apply(@)
-    @fractal_manager = new window.FractalManager(canvas_size)
-    @fractal_manager_view = new window.FractalManagerView(@fractal_manager, '#active_mandelbrot')
+    @fractal_manager = new window.FractalManager(canvas_size, @CANVAS_PIXEL_WIDTH, @CANVAS_PIXEL_HEIGHT)
     
   startLevel: (this_level) =>
     @fractal_manager.resetCanvas()
@@ -88,12 +93,17 @@ window.ActiveFractal = class extends Backbone.Model
     @set 'zoom', 1
     @set 'max_zoom', Math.pow(@get('zoom_multiplier'), this_level)
     
+  endLevel: =>
+    console.log('complete me')
+    
   startGame: =>
     @startLevel(1)
   
   zoomIn: (new_top_left) =>
     new_zoom = @get('zoom') * @get('zoom_multiplier')
-    @fractal_manager.setCanvas(new_top_left, new_zoom, @get('zoom'), @CANVAS_PIXEL_WIDTH, @CANVAS_PIXEL_HEIGHT)
+    @fractal_manager.setCanvas(new_top_left, new_zoom, @get('zoom'))
+    if (new_zoom >= @get('max_zoom'))
+      @endLevel()
     @set 'zoom', new_zoom
 
 window.ActiveFractalView = class extends Backbone.View
@@ -102,48 +112,56 @@ window.ActiveFractalView = class extends Backbone.View
   current_section: {x:0, y:0}
   
   template: _.template(
-    "<div id='instructions'>
+    "<div id='fractal-game-message'>
       Click to zoom in. Try to zoom in to the exact location of the fractal on the left.
     </div>
     <div class='canvas-header'>
-      Current Level: <%= level %> clicks deep 
-      Zoom at target location: x<%= max_zoom %>
+      Current zoom: <span id='active-zoom' class='zoom'>x<%= zoom %></span> 
+      <br/>
+      Target zoom: <span id='target-zoom' class='zoom'>x<%= max_zoom %></span>
+      <br/>
+      Clicks remaining: <span id='remaining-clicks'><%= remaining_clicks %></span>
     </div>
     <div id='active-canvas' style='position:relative;'>
-        <canvas id='active_mandelbrot' style='position:absolute;' width='<%= CANVAS_PIXEL_WIDTH %>' height='<%= CANVAS_PIXEL_HEIGHT %>'> </canvas>
-        <div id='fractal-sections' />
+        <div class='active-mandelbrot' />
+        <div class='fractal-sections' />
 
-        <div id='active-zoom' class='zoom'><%= zoom %>x</div>
     </div>")
 
   constructor: (options={}) ->
     {@model, @classname} = options
-    @$el = $ '#active-fractal'
-    @render()
-    @$canvas_el = $ '#active_mandelbrot'
-    
+ 
     @fractal_sections = new window.FractalSections({
       width: @model.CANVAS_PIXEL_WIDTH
       height: @model.CANVAS_PIXEL_HEIGHT
       on_click_function: @model.zoomIn
     })
-    @fractal_sections_view = new window.FractalSectionsView(@fractal_sections, '#fractal-sections')
+    @fractal_sections_view = new window.FractalSectionsView(@fractal_sections)
+    @fractal_manager_view = new window.FractalManagerView(@model.fractal_manager)
+    
     Backbone.View.apply(@)
     
   initialize: =>
-    @fractal_sections_view.initialize()
+    @$el = $ '#active-fractal'
     @model.on('change', @render, @)
     @render()
     
+    @fractal_sections_view.initialize()
+    @fractal_manager_view.initialize()
+    
+  assign: (view, selector) -> 
+    view.setElement($(selector))
+    view.render()
+    
   render: =>
-    @drawFractal()
     @$el.html(@template({
       'zoom':@model.get('zoom')
-      'level': @model.get('level')
       'max_zoom': @model.get('max_zoom')
+      'remaining_clicks': @model.get('max_zoom')/@model.get('zoom_multiplier') - Math.floor(@model.get('zoom')/@model.get('zoom_multiplier'))
       'CANVAS_PIXEL_WIDTH': @model.CANVAS_PIXEL_WIDTH
       'CANVAS_PIXEL_HEIGHT': @model.CANVAS_PIXEL_HEIGHT
     }))
-  
-  drawFractal: ->
-    @model.fractal_manager_view.render()
+    
+    @assign(@fractal_manager_view, '.active-mandelbrot')
+    @assign(@fractal_sections_view, '.fractal-sections')
+

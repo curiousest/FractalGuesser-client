@@ -12,6 +12,4 @@
     model: target
   });
 
-  window.targetView.drawFractal();
-
 }).call(this);

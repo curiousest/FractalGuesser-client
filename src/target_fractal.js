@@ -7,14 +7,11 @@
   window.TargetFractal = (function(_super) {
     __extends(_Class, _super);
 
-    _Class.prototype.defaults = {
-      zoom: 1
-    };
-
     function _Class(canvas_size, active_fractal) {
       this.getCanvasSectionCoordinates = __bind(this.getCanvasSectionCoordinates, this);
       this.getCanvasSection = __bind(this.getCanvasSection, this);
       this.zoomTo = __bind(this.zoomTo, this);
+      this.newRandomCanvas = __bind(this.newRandomCanvas, this);
       Backbone.Model.apply(this);
       this.SECTION_ROW_COUNT = active_fractal.SECTION_ROW_COUNT;
       this.SECTION_COLUMN_COUNT = active_fractal.SECTION_COLUMN_COUNT;
@@ -22,12 +19,31 @@
       this.CANVAS_PIXEL_HEIGHT = active_fractal.CANVAS_PIXEL_HEIGHT;
       this.x_section_size = this.CANVAS_PIXEL_WIDTH / this.SECTION_COLUMN_COUNT;
       this.y_section_size = this.CANVAS_PIXEL_HEIGHT / this.SECTION_ROW_COUNT;
-      this.fractal_manager = new window.FractalManager(canvas_size);
-      this.fractal_manager_view = new window.FractalManagerView(this.fractal_manager, '#target_mandelbrot');
+      this.zoom_multiplier = active_fractal.get('zoom_multiplier');
+      this.fractal_manager = new window.FractalManager(canvas_size, this.CANVAS_PIXEL_WIDTH, this.CANVAS_PIXEL_HEIGHT);
     }
 
+    _Class.prototype.newRandomCanvas = function(next_level) {
+      var level, _i, _results;
+      this.fractal_manager.resetCanvas();
+      _results = [];
+      for (level = _i = 1; 1 <= next_level ? _i <= next_level : _i >= next_level; level = 1 <= next_level ? ++_i : --_i) {
+        _results.push((function(_this) {
+          return function(level) {
+            var section_coordinates;
+            section_coordinates = _this.getCanvasSectionCoordinates({
+              x: Math.floor(Math.random() * 4),
+              y: Math.floor(Math.random() * 4)
+            });
+            return _this.fractal_manager.setCanvas(section_coordinates.top_left, Math.pow(_this.zoom_multiplier, level), Math.pow(_this.zoom_multiplier, level - 1));
+          };
+        })(this)(level));
+      }
+      return _results;
+    };
+
     _Class.prototype.zoomTo = function(top_left, new_zoom) {
-      this.fractal_manager.setCanvas(top_left, new_zoom, this.get('zoom'), this.CANVAS_PIXEL_WIDTH, this.CANVAS_PIXEL_HEIGHT);
+      this.fractal_manager.setCanvas(top_left, new_zoom, this.get('zoom'));
       return this.set('zoom', new_zoom);
     };
 
@@ -61,7 +77,7 @@
   window.TargetFractalView = (function(_super) {
     __extends(_Class, _super);
 
-    _Class.prototype.template = _.template("<div id='target-canvas'> <canvas id='target_mandelbrot' width='<%= CANVAS_PIXEL_WIDTH %>' height='<%= CANVAS_PIXEL_HEIGHT %>'> </canvas> <div id='target-zoom' class='zoom'><%= zoom %>x</div> </div>");
+    _Class.prototype.template = _.template("<div id='target-canvas'> <div class='target-mandelbrot' /> </div>");
 
     function _Class(options) {
       if (options == null) {
@@ -69,24 +85,25 @@
       }
       this.render = __bind(this.render, this);
       this.model = options.model, this.classname = options.classname;
-      this.$el = $('#target-fractal');
-      this.render();
+      this.fractal_manager_view = new window.FractalManagerView(this.model.fractal_manager);
+      Backbone.View.apply(this);
     }
 
     _Class.prototype.initialize = function() {
-      return this.model.on('change', this.render, this);
+      this.$el = $('#target-fractal');
+      this.model.newRandomCanvas(1);
+      this.render();
+      return this.fractal_manager_view.initialize();
+    };
+
+    _Class.prototype.assign = function(view, selector) {
+      view.setElement($(selector));
+      return view.render();
     };
 
     _Class.prototype.render = function() {
-      return this.$el.html(this.template({
-        'zoom': this.model.get('zoom'),
-        'CANVAS_PIXEL_WIDTH': this.model.CANVAS_PIXEL_WIDTH,
-        'CANVAS_PIXEL_HEIGHT': this.model.CANVAS_PIXEL_HEIGHT
-      }));
-    };
-
-    _Class.prototype.drawFractal = function() {
-      return this.model.fractal_manager_view.render();
+      this.$el.html(this.template());
+      return this.assign(this.fractal_manager_view, '.target-mandelbrot');
     };
 
     return _Class;

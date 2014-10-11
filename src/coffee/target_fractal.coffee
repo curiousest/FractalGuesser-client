@@ -1,6 +1,4 @@
 window.TargetFractal = class extends Backbone.Model
-  defaults:
-    zoom: 1
 
   constructor: (canvas_size, active_fractal) ->
     Backbone.Model.apply(@)
@@ -10,11 +8,25 @@ window.TargetFractal = class extends Backbone.Model
     @CANVAS_PIXEL_HEIGHT = active_fractal.CANVAS_PIXEL_HEIGHT
     @x_section_size = @CANVAS_PIXEL_WIDTH / @SECTION_COLUMN_COUNT
     @y_section_size = @CANVAS_PIXEL_HEIGHT / @SECTION_ROW_COUNT
-    @fractal_manager = new window.FractalManager(canvas_size)
-    @fractal_manager_view = new window.FractalManagerView(@fractal_manager, '#target_mandelbrot')
+    @zoom_multiplier = active_fractal.get('zoom_multiplier')
+    @fractal_manager = new window.FractalManager(canvas_size, @CANVAS_PIXEL_WIDTH, @CANVAS_PIXEL_HEIGHT)
+  
+  newRandomCanvas: (next_level) =>
+    @fractal_manager.resetCanvas()
+    for level in [1..next_level]
+      do (level) =>
+        section_coordinates = @getCanvasSectionCoordinates({
+          x: Math.floor(Math.random() * 4)
+          y: Math.floor(Math.random() * 4)
+        })
+        @fractal_manager.setCanvas(
+          section_coordinates.top_left
+          Math.pow(@zoom_multiplier, level)
+          Math.pow(@zoom_multiplier, level - 1)
+        )
     
   zoomTo: (top_left, new_zoom) =>
-    @fractal_manager.setCanvas(top_left, new_zoom, @get('zoom'), @CANVAS_PIXEL_WIDTH, @CANVAS_PIXEL_HEIGHT)
+    @fractal_manager.setCanvas(top_left, new_zoom, @get('zoom'))
     @set 'zoom', new_zoom
     
   getCanvasSection: (coordinate) =>
@@ -37,24 +49,27 @@ window.TargetFractal = class extends Backbone.Model
 window.TargetFractalView = class extends Backbone.View
   template: _.template("
     <div id='target-canvas'>
-        <canvas id='target_mandelbrot' width='<%= CANVAS_PIXEL_WIDTH %>' height='<%= CANVAS_PIXEL_HEIGHT %>'> </canvas>
-        <div id='target-zoom' class='zoom'><%= zoom %>x</div>
+        <div class='target-mandelbrot' />
     </div>")
 
   constructor: (options={}) ->
     {@model, @classname} = options
-    @$el = $('#target-fractal')
-    @render()
+    
+    @fractal_manager_view = new window.FractalManagerView(@model.fractal_manager)
+    
+    Backbone.View.apply(@)
     
   initialize: ->
-    @model.on('change', @render, @)    
+    @$el = $ '#target-fractal'
+    @model.newRandomCanvas(1)
+    @render()
+    
+    @fractal_manager_view.initialize()
+    
+  assign: (view, selector) -> 
+    view.setElement($(selector))
+    view.render()
   
   render: =>
-    @$el.html(@template({
-      'zoom':@model.get('zoom')
-      'CANVAS_PIXEL_WIDTH': @model.CANVAS_PIXEL_WIDTH
-      'CANVAS_PIXEL_HEIGHT': @model.CANVAS_PIXEL_HEIGHT
-    }))
-  
-  drawFractal: ->
-    @model.fractal_manager_view.render()
+    @$el.html(@template())
+    @assign(@fractal_manager_view, '.target-mandelbrot')
