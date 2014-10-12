@@ -14,29 +14,33 @@
     model: target_fractal
   });
 
-  fractal_manager = new window.FractalManager(MANDELBROT_CANVAS_SIZE);
+  fractal_manager = new window.FractalManager(MANDELBROT_CANVAS_SIZE, 400, 285);
 
   describe('TargetFractal', function() {
-    return describe('zoomTo(top_left: {x,y}, zoom: int)', function() {
-      it('should set the fractal`s top_left coordinate', function() {
-        target_fractal.zoomTo({
-          x: 0,
-          y: 0
-        }, 4);
-        return target_fractal.fractal_manager.get('top_left').should.eql({
-          x: -2.5,
-          y: 1.25
-        });
+    return describe('newRandomCanvas(level: int)', function() {
+      it('should set the fractal manager`s top left and bottom right coordinates appropriately distant at level 1', function() {
+        var bottom_right, top_left;
+        target_fractal.newRandomCanvas(1);
+        top_left = target_fractal.fractal_manager.get('top_left');
+        bottom_right = target_fractal.fractal_manager.get('bottom_right');
+        (bottom_right.x - top_left.x).should.eql(0.875);
+        return (top_left.y - bottom_right.y).should.eql(0.625);
       });
-      return it('should set the fractal`s bottom_left coordinate', function() {
-        target_fractal.zoomTo({
-          x: 0,
-          y: 0
-        }, 4);
-        return target_fractal.fractal_manager.get('bottom_right').should.eql({
-          x: -1.625,
-          y: 0.625
-        });
+      it('should set the fractal manager`s top left and bottom right coordinates appropriately distant at level 2', function() {
+        var bottom_right, top_left;
+        target_fractal.newRandomCanvas(2);
+        top_left = target_fractal.fractal_manager.get('top_left');
+        bottom_right = target_fractal.fractal_manager.get('bottom_right');
+        (bottom_right.x - top_left.x).should.eql(0.21875);
+        return (top_left.y - bottom_right.y).should.eql(0.15625);
+      });
+      return it('should set the fractal manager`s top left and bottom right coordinates appropriately distant at level 6', function() {
+        var bottom_right, top_left;
+        target_fractal.newRandomCanvas(6);
+        top_left = target_fractal.fractal_manager.get('top_left');
+        bottom_right = target_fractal.fractal_manager.get('bottom_right');
+        (bottom_right.x - top_left.x).should.eql(0.0008544921875);
+        return (top_left.y - bottom_right.y).should.eql(0.0006103515625);
       });
     });
   });
@@ -190,12 +194,12 @@
         return fractal_manager.get('entire_height').should.eql(2.5);
       });
     });
-    describe('setCanvas(top_left: {x: int, y: int}, zoom: int, old_zoom: int, canvas_pixel_width: int, canvas_pixel_height: int)', function() {
+    describe('setCanvas(top_left: {x: int, y: int}, zoom: int, old_zoom: int)', function() {
       it('should update the fractal`s top_left coordinate', function() {
         fractal_manager.setCanvas({
           x: 100,
           y: 71.25
-        }, 4, 1, 400, 285);
+        }, 4, 1);
         return fractal_manager.get('top_left').should.eql({
           x: -1.625,
           y: 0.625
@@ -205,7 +209,7 @@
         fractal_manager.setCanvas({
           x: 100,
           y: 71.25
-        }, 4, 1, 400, 285);
+        }, 4, 1);
         fractal_manager.get('bottom_right').should.eql({
           x: 0.125,
           y: -0.625
@@ -213,10 +217,10 @@
         fractal_manager.setCanvas({
           x: 100,
           y: 71.25
-        }, 8, 4, 400, 285);
+        }, 16, 4);
         return fractal_manager.get('bottom_right').should.eql({
-          x: -0.09375,
-          y: -0.46875
+          x: -0.3125,
+          y: -0.3125
         });
       });
     });

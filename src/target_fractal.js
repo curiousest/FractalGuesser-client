@@ -10,7 +10,6 @@
     function _Class(canvas_size, active_fractal) {
       this.getCanvasSectionCoordinates = __bind(this.getCanvasSectionCoordinates, this);
       this.getCanvasSection = __bind(this.getCanvasSection, this);
-      this.zoomTo = __bind(this.zoomTo, this);
       this.newRandomCanvas = __bind(this.newRandomCanvas, this);
       Backbone.Model.apply(this);
       this.SECTION_ROW_COUNT = active_fractal.SECTION_ROW_COUNT;
@@ -40,11 +39,6 @@
         })(this)(level));
       }
       return _results;
-    };
-
-    _Class.prototype.zoomTo = function(top_left, new_zoom) {
-      this.fractal_manager.setCanvas(top_left, new_zoom, this.get('zoom'));
-      return this.set('zoom', new_zoom);
     };
 
     _Class.prototype.getCanvasSection = function(coordinate) {

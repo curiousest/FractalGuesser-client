@@ -25,10 +25,6 @@ window.TargetFractal = class extends Backbone.Model
           Math.pow(@zoom_multiplier, level - 1)
         )
     
-  zoomTo: (top_left, new_zoom) =>
-    @fractal_manager.setCanvas(top_left, new_zoom, @get('zoom'))
-    @set 'zoom', new_zoom
-    
   getCanvasSection: (coordinate) =>
     x_section = Math.floor(coordinate.x / @x_section_size)
     y_section = Math.floor(coordinate.y / @y_section_size)

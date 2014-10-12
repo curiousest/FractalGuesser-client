@@ -2,17 +2,30 @@ active_fractal = new window.ActiveFractal(MANDELBROT_CANVAS_SIZE)
 active_fractal_view = new window.ActiveFractalView({model:active_fractal})
 target_fractal = new window.TargetFractal(MANDELBROT_CANVAS_SIZE, active_fractal)
 target_fractal_view = new window.TargetFractalView({model:target_fractal})
-fractal_manager = new window.FractalManager(MANDELBROT_CANVAS_SIZE)
+fractal_manager = new window.FractalManager(MANDELBROT_CANVAS_SIZE, 400, 285)
 
 describe('TargetFractal', ->
-  describe('zoomTo(top_left: {x,y}, zoom: int)', ->
-    it('should set the fractal`s top_left coordinate', ->
-      target_fractal.zoomTo({x: 0, y: 0}, 4)
-      target_fractal.fractal_manager.get('top_left').should.eql({x: -2.5, y: 1.25})
+  describe('newRandomCanvas(level: int)', ->
+    it('should set the fractal manager`s top left and bottom right coordinates appropriately distant at level 1', ->
+      target_fractal.newRandomCanvas(1)
+      top_left = target_fractal.fractal_manager.get('top_left')
+      bottom_right = target_fractal.fractal_manager.get('bottom_right')
+      (bottom_right.x - top_left.x).should.eql(0.875)
+      (top_left.y - bottom_right.y).should.eql(0.625)
     )
-    it('should set the fractal`s bottom_left coordinate', ->
-      target_fractal.zoomTo({x: 0, y: 0}, 4)
-      target_fractal.fractal_manager.get('bottom_right').should.eql({x: -1.625, y: 0.625})
+    it('should set the fractal manager`s top left and bottom right coordinates appropriately distant at level 2', ->
+      target_fractal.newRandomCanvas(2)
+      top_left = target_fractal.fractal_manager.get('top_left')
+      bottom_right = target_fractal.fractal_manager.get('bottom_right')
+      (bottom_right.x - top_left.x).should.eql(0.21875)
+      (top_left.y - bottom_right.y).should.eql(0.15625)
+    )
+    it('should set the fractal manager`s top left and bottom right coordinates appropriately distant at level 6', ->
+      target_fractal.newRandomCanvas(6)
+      top_left = target_fractal.fractal_manager.get('top_left')
+      bottom_right = target_fractal.fractal_manager.get('bottom_right')
+      (bottom_right.x - top_left.x).should.eql(0.0008544921875)
+      (top_left.y - bottom_right.y).should.eql(0.0006103515625)
     )
   )
 )
@@ -98,16 +111,16 @@ describe('FractalManager', ->
       fractal_manager.get('entire_height').should.eql(2.5)
     )
   )
-  describe('setCanvas(top_left: {x: int, y: int}, zoom: int, old_zoom: int, canvas_pixel_width: int, canvas_pixel_height: int)', ->
+  describe('setCanvas(top_left: {x: int, y: int}, zoom: int, old_zoom: int)', ->
     it('should update the fractal`s top_left coordinate', ->
-      fractal_manager.setCanvas({x: 100, y: 71.25}, 4, 1, 400, 285)
+      fractal_manager.setCanvas({x: 100, y: 71.25}, 4, 1)
       fractal_manager.get('top_left').should.eql({x: -1.625, y: 0.625})
     )
     it('should calculate and update the fractal`s bottom_right coordinate', ->
-      fractal_manager.setCanvas({x: 100, y: 71.25}, 4, 1, 400, 285)
+      fractal_manager.setCanvas({x: 100, y: 71.25}, 4, 1)
       fractal_manager.get('bottom_right').should.eql({x: 0.125, y: -0.625})
-      fractal_manager.setCanvas({x: 100, y: 71.25}, 8, 4, 400, 285)
-      fractal_manager.get('bottom_right').should.eql({x: -0.09375, y: -0.46875})
+      fractal_manager.setCanvas({x: 100, y: 71.25}, 16, 4)
+      fractal_manager.get('bottom_right').should.eql({x: -0.3125, y: -0.3125})
     )
   )
   describe('resetCanvas()', ->
