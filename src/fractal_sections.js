@@ -12,6 +12,11 @@
       y: 0
     };
 
+    _Class.prototype.section = {
+      x: 0,
+      y: 0
+    };
+
     _Class.prototype.width = 0;
 
     _Class.prototype.height = 0;
@@ -23,7 +28,7 @@
         options = {};
       }
       Backbone.Model.apply(this);
-      this.top_left = options.top_left, this.width = options.width, this.height = options.height, this.on_click_function = options.on_click_function;
+      this.top_left = options.top_left, this.section = options.section, this.width = options.width, this.height = options.height, this.on_click_function = options.on_click_function;
     }
 
     return _Class;
@@ -45,7 +50,7 @@
       this.$el.html('&nbsp');
       return this.$el.on('click', (function(_this) {
         return function() {
-          return _this.model.on_click_function(_this.model.top_left);
+          return _this.model.on_click_function(_this.model.section);
         };
       })(this));
     };
@@ -84,6 +89,10 @@
           };
           fractalSection = new window.FractalSection({
             top_left: top_left,
+            section: {
+              x: x_offset,
+              y: y_offset
+            },
             width: Math.floor(section_width) - 1,
             height: Math.floor(section_height) - 1,
             on_click_function: options.on_click_function

@@ -26,10 +26,10 @@ window.FractalManager = class extends Backbone.Model
     @set 'pixel_width', pixel_width
     @set 'pixel_height', pixel_height
     
-  setCanvas: (new_top_left, new_zoom, old_zoom) ->
+  setCanvas: (target_section, new_zoom) ->
     offset_from_old_top_left = {
-      x: (new_top_left.x / @get('pixel_width')) * @get('entire_width')/old_zoom
-      y: (new_top_left.y / @get('pixel_height')) * @get('entire_height')/old_zoom
+      x: target_section.x * @get('entire_width')/new_zoom
+      y: target_section.y * @get('entire_height')/new_zoom
     }
     old_top_left = @get('top_left')
     @set 'top_left', {
@@ -40,6 +40,16 @@ window.FractalManager = class extends Backbone.Model
       x: old_top_left.x + offset_from_old_top_left.x + @get('entire_width')/new_zoom
       y: old_top_left.y - offset_from_old_top_left.y - @get('entire_height')/new_zoom
     }
+    
+  sameSection: (other_fractal_manager) ->
+    this_top_left = @get('top_left')
+    this_bottom_right = @get('bottom_right')
+    other_top_left = other_fractal_manager.get('top_left')
+    other_bottom_right = other_fractal_manager.get('bottom_right')
+    return this_top_left.x == other_top_left.x && 
+      this_top_left.y == other_top_left.y && 
+      this_bottom_right.x == other_bottom_right.x && 
+      this_bottom_right.y == other_bottom_right.y
     
   resetCanvas: ->
     @set 'top_left', @get 'default_top_left'

@@ -50,11 +50,11 @@
       this.set('pixel_height', pixel_height);
     }
 
-    _Class.prototype.setCanvas = function(new_top_left, new_zoom, old_zoom) {
+    _Class.prototype.setCanvas = function(target_section, new_zoom) {
       var offset_from_old_top_left, old_top_left;
       offset_from_old_top_left = {
-        x: (new_top_left.x / this.get('pixel_width')) * this.get('entire_width') / old_zoom,
-        y: (new_top_left.y / this.get('pixel_height')) * this.get('entire_height') / old_zoom
+        x: target_section.x * this.get('entire_width') / new_zoom,
+        y: target_section.y * this.get('entire_height') / new_zoom
       };
       old_top_left = this.get('top_left');
       this.set('top_left', {
@@ -65,6 +65,15 @@
         x: old_top_left.x + offset_from_old_top_left.x + this.get('entire_width') / new_zoom,
         y: old_top_left.y - offset_from_old_top_left.y - this.get('entire_height') / new_zoom
       });
+    };
+
+    _Class.prototype.sameSection = function(other_fractal_manager) {
+      var other_bottom_right, other_top_left, this_bottom_right, this_top_left;
+      this_top_left = this.get('top_left');
+      this_bottom_right = this.get('bottom_right');
+      other_top_left = other_fractal_manager.get('top_left');
+      other_bottom_right = other_fractal_manager.get('bottom_right');
+      return this_top_left.x === other_top_left.x && this_top_left.y === other_top_left.y && this_bottom_right.x === other_bottom_right.x && this_bottom_right.y === other_bottom_right.y;
     };
 
     _Class.prototype.resetCanvas = function() {

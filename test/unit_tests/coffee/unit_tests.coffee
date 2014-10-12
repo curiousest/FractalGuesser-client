@@ -31,8 +31,9 @@ describe('FractalGame', ->
     )
   )
 
-  describe('zoomIn(new_top_left)', ->
+  describe('zoomIn(next_section)', ->
     it('should zoom in to current zoom * zoom multiplier', ->
+      fractal_game.startLevel(2)
       fractal_game.zoomIn({x: 0, y: 0})
       fractal_game.get('zoom').should.be.exactly(4)
       fractal_game.zoomIn({x: 0, y: 0})
@@ -40,8 +41,8 @@ describe('FractalGame', ->
     )
     it('should update the canvas coordinates for the active fractal`s fractal manager', ->
       fractal_game.startGame()
-      fractal_game.zoomIn({x: 0.5, y: 0.5})
-      fractal_game.active_fractal_manager.get('bottom_right').should.eql({x: -1.620625, y: 0.6206140350877194})
+      fractal_game.zoomIn({x: 1, y: 1})
+      fractal_game.active_fractal_manager.get('bottom_right').should.eql({x: -0.75, y: 0})
     )
   )
   
@@ -81,24 +82,28 @@ describe('FractalManager', ->
       fractal_manager.get('entire_height').should.eql(2.5)
     )
   )
-  describe('setCanvas(top_left: {x: int, y: int}, zoom: int, old_zoom: int)', ->
-    it('should update the fractal`s top_left coordinate', ->
-      fractal_manager.setCanvas({x: 100, y: 71.25}, 4, 1)
-      fractal_manager.get('top_left').should.eql({x: -1.625, y: 0.625})
-    )
-    it('should calculate and update the fractal`s bottom_right coordinate', ->
-      fractal_manager.setCanvas({x: 100, y: 71.25}, 4, 1)
-      fractal_manager.get('bottom_right').should.eql({x: 0.125, y: -0.625})
-      fractal_manager.setCanvas({x: 100, y: 71.25}, 16, 4)
-      fractal_manager.get('bottom_right').should.eql({x: -0.3125, y: -0.3125})
-    )
-  )
   describe('resetCanvas()', ->
     it('should set the top left and bottom right coordinates back to their default values', ->
       fractal_manager.setCanvas({x: 0.5, y: 0.5}, 4)
       fractal_manager.resetCanvas()
       fractal_manager.get('bottom_right').should.eql(fractal_manager.get('default_bottom_right'))
       fractal_manager.get('top_left').should.eql(fractal_manager.get('default_top_left'))
+    )
+  )
+  describe('setCanvas(target_section: {x: int, y: int}, zoom: int, old_zoom: int)', ->
+    it('should update the fractal`s top_left coordinate', ->
+      fractal_manager.setCanvas({x: 1, y: 1}, 4)
+      fractal_manager.get('top_left').should.eql({x: -1.625, y: 0.625})
+      fractal_manager.resetCanvas()
+      fractal_manager.setCanvas({x: 3, y: 0}, 4)
+      fractal_manager.get('top_left').should.eql({x: 0.125, y: 1.25})
+    )
+    it('should calculate and update the fractal`s bottom_right coordinate', ->
+      fractal_manager.resetCanvas()
+      fractal_manager.setCanvas({x: 1, y: 1}, 4)
+      fractal_manager.get('bottom_right').should.eql({x: -0.75, y: 0})
+      fractal_manager.setCanvas({x: 1, y: 1}, 16)
+      fractal_manager.get('bottom_right').should.eql({x: -1.1875, y: 0.3125})
     )
   )
 )

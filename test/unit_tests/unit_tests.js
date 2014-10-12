@@ -36,8 +36,9 @@
         return fractal_game.get('max_zoom').should.be.exactly(4);
       });
     });
-    describe('zoomIn(new_top_left)', function() {
+    describe('zoomIn(next_section)', function() {
       it('should zoom in to current zoom * zoom multiplier', function() {
+        fractal_game.startLevel(2);
         fractal_game.zoomIn({
           x: 0,
           y: 0
@@ -52,12 +53,12 @@
       return it('should update the canvas coordinates for the active fractal`s fractal manager', function() {
         fractal_game.startGame();
         fractal_game.zoomIn({
-          x: 0.5,
-          y: 0.5
+          x: 1,
+          y: 1
         });
         return fractal_game.active_fractal_manager.get('bottom_right').should.eql({
-          x: -1.620625,
-          y: 0.6206140350877194
+          x: -0.75,
+          y: 0
         });
       });
     });
@@ -106,37 +107,7 @@
         return fractal_manager.get('entire_height').should.eql(2.5);
       });
     });
-    describe('setCanvas(top_left: {x: int, y: int}, zoom: int, old_zoom: int)', function() {
-      it('should update the fractal`s top_left coordinate', function() {
-        fractal_manager.setCanvas({
-          x: 100,
-          y: 71.25
-        }, 4, 1);
-        return fractal_manager.get('top_left').should.eql({
-          x: -1.625,
-          y: 0.625
-        });
-      });
-      return it('should calculate and update the fractal`s bottom_right coordinate', function() {
-        fractal_manager.setCanvas({
-          x: 100,
-          y: 71.25
-        }, 4, 1);
-        fractal_manager.get('bottom_right').should.eql({
-          x: 0.125,
-          y: -0.625
-        });
-        fractal_manager.setCanvas({
-          x: 100,
-          y: 71.25
-        }, 16, 4);
-        return fractal_manager.get('bottom_right').should.eql({
-          x: -0.3125,
-          y: -0.3125
-        });
-      });
-    });
-    return describe('resetCanvas()', function() {
+    describe('resetCanvas()', function() {
       return it('should set the top left and bottom right coordinates back to their default values', function() {
         fractal_manager.setCanvas({
           x: 0.5,
@@ -145,6 +116,46 @@
         fractal_manager.resetCanvas();
         fractal_manager.get('bottom_right').should.eql(fractal_manager.get('default_bottom_right'));
         return fractal_manager.get('top_left').should.eql(fractal_manager.get('default_top_left'));
+      });
+    });
+    return describe('setCanvas(target_section: {x: int, y: int}, zoom: int, old_zoom: int)', function() {
+      it('should update the fractal`s top_left coordinate', function() {
+        fractal_manager.setCanvas({
+          x: 1,
+          y: 1
+        }, 4);
+        fractal_manager.get('top_left').should.eql({
+          x: -1.625,
+          y: 0.625
+        });
+        fractal_manager.resetCanvas();
+        fractal_manager.setCanvas({
+          x: 3,
+          y: 0
+        }, 4);
+        return fractal_manager.get('top_left').should.eql({
+          x: 0.125,
+          y: 1.25
+        });
+      });
+      return it('should calculate and update the fractal`s bottom_right coordinate', function() {
+        fractal_manager.resetCanvas();
+        fractal_manager.setCanvas({
+          x: 1,
+          y: 1
+        }, 4);
+        fractal_manager.get('bottom_right').should.eql({
+          x: -0.75,
+          y: 0
+        });
+        fractal_manager.setCanvas({
+          x: 1,
+          y: 1
+        }, 16);
+        return fractal_manager.get('bottom_right').should.eql({
+          x: -1.1875,
+          y: 0.3125
+        });
       });
     });
   });

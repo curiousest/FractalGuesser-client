@@ -4,11 +4,14 @@ window.FractalGame = class extends Backbone.Model
   CANVAS_PIXEL_WIDTH: 400
   CANVAS_PIXEL_HEIGHT: 285
   zoom_multiplier: 4
+  target_order: []
+  on_correct_route: true
   
   defaults:
     zoom: 1
     level: 1
     max_zoom: 4
+    fractal_game_message: "Click to zoom in. Try to zoom in to the exact location of the fractal on the left."
     
   constructor: (canvas_size) ->
     Backbone.Model.apply(@)
@@ -26,31 +29,38 @@ window.FractalGame = class extends Backbone.Model
     @set 'max_zoom', Math.pow(@zoom_multiplier, this_level)
     
   endLevel: =>
-    console.log('complete me')
+    if(@on_correct_route)
+      @startLevel(@get('level') + 1)
+    else
+      @set('fractal_game_message', "Incorrect choice. Sorry, you picked the wrong route. Refresh to try again...or keep zooming in...")
     
   startGame: =>
     @startLevel(1)
   
-  zoomIn: (new_top_left) =>
+  zoomIn: (picked_section) =>
     new_zoom = @get('zoom') * @zoom_multiplier
-    @active_fractal_manager.setCanvas(new_top_left, new_zoom, @get('zoom'))
-    if (new_zoom >= @get('max_zoom'))
-      @endLevel()
+    @active_fractal_manager.setCanvas(picked_section, new_zoom)
     @set 'zoom', new_zoom
+    correct_section = @target_order.pop()
+    if !(correct_section.x == picked_section.x && correct_section.y == picked_section.y)
+      @on_correct_route = false
+    if (new_zoom == @get('max_zoom'))
+      @endLevel()
     
   newRandomTargetCanvas: (next_level) =>
     @target_fractal.target_fractal_manager.resetCanvas()
+    @target_order = []
     for level in [1..next_level]
       do (level) =>
-        section_coordinates = {
-          x: Math.ceil(Math.floor(Math.random() * 4) * @x_section_size)
-          y: Math.ceil(Math.floor(Math.random() * 4) * @y_section_size)
+        next_section = {
+          x: Math.floor(Math.random() * 4)
+          y: Math.floor(Math.random() * 4)
         }
         @target_fractal.target_fractal_manager.setCanvas(
-          section_coordinates
+          next_section
           Math.pow(@zoom_multiplier, level)
-          Math.pow(@zoom_multiplier, level - 1)
         )
+        @target_order.push(next_section)
         
     # the target fractal is rendered on this change, not when the fractal game is rendered
     @target_fractal.trigger('change')
@@ -62,7 +72,7 @@ window.FractalGameView = class extends Backbone.View
   
   template: _.template(
     "<div id='fractal-game-message'>
-      Click to zoom in. Try to zoom in to the exact location of the fractal on the left.
+      <%= fractal_game_message %>
     </div>
     <div class='canvas-header'>
       Current zoom: <span id='active-zoom' class='zoom'>x<%= zoom %></span> 
@@ -116,6 +126,7 @@ window.FractalGameView = class extends Backbone.View
       'remaining_clicks': @model.get('max_zoom')/@model.zoom_multiplier - Math.floor(@model.get('zoom')/@model.zoom_multiplier)
       'CANVAS_PIXEL_WIDTH': @model.CANVAS_PIXEL_WIDTH
       'CANVAS_PIXEL_HEIGHT': @model.CANVAS_PIXEL_HEIGHT
+      'fractal_game_message' : @model.get('fractal_game_message')
     }))
     
     @assign(@active_fractal_manager_view, '.active-mandelbrot')
