@@ -15,7 +15,8 @@ window.FractalSection = class extends Backbone.Model
       
 window.FractalSectionView = class extends Backbone.View
 
-  initialize: =>
+  constructor: ->
+    super
     @el.classList.add('fractal-section')
     @el.setAttribute('style',
       'top: ' + @model.top_left.y + 'px; ' +
@@ -23,10 +24,13 @@ window.FractalSectionView = class extends Backbone.View
       'border: 1px; ' +
       'border-style: solid;' +
       'min-width: ' + @model.width + 'px; ' +
-      'min-height: ' + @model.height + 'px; '+
+      'min-height: ' + @model.height + 'px; ' +
+      'z-index: 99;' +
       'position: absolute;'
     )
     @$el.html('&nbsp')
+
+  initialize: =>
     @$el.on('click', =>@model.on_click_function(@model.section))
 
   render: => return @$el
@@ -72,6 +76,8 @@ window.FractalSectionsView = class extends Backbone.View
     )
   
   render: =>
-    @$el.append(section.render()) for section in @sectionList
+    for section in @sectionList
+      @$el.append(section.render())
+      section.initialize()
     return @$el
 

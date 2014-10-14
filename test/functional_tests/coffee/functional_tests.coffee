@@ -8,6 +8,8 @@ functional_tests.peter_plays_first_level = ->
   driver = new webdriver.Builder().
      withCapabilities(webdriver.Capabilities.chrome()).
      build()
+     
+  timer = new webdriver.promise.ControlFlow()
 
   # Peter hits the html page with the game in it
   driver.get('file:///home/dough/workspace/JSFractalGame/test/exampleUsage.html')
@@ -69,7 +71,7 @@ functional_tests.peter_plays_first_level = ->
   
   fractal_sections = driver.findElement(webdriver.By.className('fractal-sections'))
   correct_fractal_section = fractal_sections.findElements(webdriver.By.className('fractal-section'))[7]
-#  correct_fractal_section.click()
+  #correct_fractal_section.click()
   console.log(correct_fractal_section)
   
   message = driver.findElement(webdriver.By.id('fractal-game-message'))

@@ -41,13 +41,13 @@
     function _Class() {
       this.render = __bind(this.render, this);
       this.initialize = __bind(this.initialize, this);
-      return _Class.__super__.constructor.apply(this, arguments);
+      _Class.__super__.constructor.apply(this, arguments);
+      this.el.classList.add('fractal-section');
+      this.el.setAttribute('style', 'top: ' + this.model.top_left.y + 'px; ' + 'left: ' + this.model.top_left.x + 'px; ' + 'border: 1px; ' + 'border-style: solid;' + 'min-width: ' + this.model.width + 'px; ' + 'min-height: ' + this.model.height + 'px; ' + 'z-index: 99;' + 'position: absolute;');
+      this.$el.html('&nbsp');
     }
 
     _Class.prototype.initialize = function() {
-      this.el.classList.add('fractal-section');
-      this.el.setAttribute('style', 'top: ' + this.model.top_left.y + 'px; ' + 'left: ' + this.model.top_left.x + 'px; ' + 'border: 1px; ' + 'border-style: solid;' + 'min-width: ' + this.model.width + 'px; ' + 'min-height: ' + this.model.height + 'px; ' + 'position: absolute;');
-      this.$el.html('&nbsp');
       return this.$el.on('click', (function(_this) {
         return function() {
           return _this.model.on_click_function(_this.model.section);
@@ -134,6 +134,7 @@
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         section = _ref[_i];
         this.$el.append(section.render());
+        section.initialize();
       }
       return this.$el;
     };

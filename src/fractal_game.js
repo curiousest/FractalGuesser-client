@@ -30,6 +30,7 @@
 
     function _Class(canvas_size) {
       this.newRandomTargetCanvas = __bind(this.newRandomTargetCanvas, this);
+      this.generateRoute = __bind(this.generateRoute, this);
       this.zoomIn = __bind(this.zoomIn, this);
       this.startGame = __bind(this.startGame, this);
       this.endLevel = __bind(this.endLevel, this);
@@ -65,6 +66,10 @@
 
     _Class.prototype.zoomIn = function(picked_section) {
       var correct_section, new_zoom;
+      if (this.zoom_lock) {
+        return;
+      }
+      this.zoom_lock = true;
       new_zoom = this.get('zoom') * this.zoom_multiplier;
       this.active_fractal_manager.setCanvas(picked_section, new_zoom);
       this.set('zoom', new_zoom);
@@ -73,28 +78,50 @@
         this.on_correct_route = false;
       }
       if (new_zoom === this.get('max_zoom')) {
-        return this.endLevel();
+        return setTimeout((function(_this) {
+          return function() {
+            _this.endLevel();
+            return _this.zoom_lock = false;
+          };
+        })(this), 1000);
+      } else {
+        return this.zoom_lock = false;
       }
     };
 
-    _Class.prototype.newRandomTargetCanvas = function(next_level) {
-      var level, _fn, _i;
-      this.target_fractal.target_fractal_manager.resetCanvas();
-      this.target_order = [];
-      _fn = (function(_this) {
-        return function(level) {
-          var next_section;
+    _Class.prototype.generateRoute = function(next_level) {
+      var level, next_section, remaining_bad_routes, route, _i;
+      if (next_level < 0 || next_level > 20) {
+        throw new error("Tried to generate route with invalid level.");
+      }
+      route = [];
+      remaining_bad_routes = window.bad_routes;
+      next_section = 0;
+      for (level = _i = 1; 1 <= next_level ? _i <= next_level : _i >= next_level; level = 1 <= next_level ? ++_i : --_i) {
+        next_section = 0;
+        while (!(next_section !== 0)) {
           next_section = {
             x: Math.floor(Math.random() * 4),
             y: Math.floor(Math.random() * 4)
           };
-          _this.target_fractal.target_fractal_manager.setCanvas(next_section, Math.pow(_this.zoom_multiplier, level));
-          return _this.target_order.push(next_section);
-        };
-      })(this);
-      for (level = _i = 1; 1 <= next_level ? _i <= next_level : _i >= next_level; level = 1 <= next_level ? ++_i : --_i) {
-        _fn(level);
+          if (level > window.bad_routes.max_depth) {
+            break;
+          }
+          if (remaining_bad_routes[next_section.x] && remaining_bad_routes[next_section.x][next_section.y]) {
+            remaining_bad_routes = remaining_bad_routes[next_section.x][next_section.y];
+          } else {
+            next_section = 0;
+          }
+        }
+        this.target_fractal.target_fractal_manager.setCanvas(next_section, Math.pow(this.zoom_multiplier, level));
+        route.push(next_section);
       }
+      return route;
+    };
+
+    _Class.prototype.newRandomTargetCanvas = function(next_level) {
+      this.target_fractal.target_fractal_manager.resetCanvas();
+      this.target_order = this.generateRoute(next_level);
       return this.target_fractal.trigger('change');
     };
 

@@ -38,6 +38,10 @@ window.FractalGame = class extends Backbone.Model
     @startLevel(1)
   
   zoomIn: (picked_section) =>
+    # don't allow zooming again while zooming already in is in progress
+    return if @zoom_lock
+    @zoom_lock = true
+    
     new_zoom = @get('zoom') * @zoom_multiplier
     @active_fractal_manager.setCanvas(picked_section, new_zoom)
     @set 'zoom', new_zoom
@@ -45,23 +49,48 @@ window.FractalGame = class extends Backbone.Model
     if !(correct_section.x == picked_section.x && correct_section.y == picked_section.y)
       @on_correct_route = false
     if (new_zoom == @get('max_zoom'))
-      @endLevel()
+      setTimeout(
+        => 
+          @endLevel()
+          @zoom_lock = false
+        1000
+      )
+    else
+      @zoom_lock = false
+      
+  generateRoute: (next_level) =>
+    if (next_level < 0 || next_level > 20)
+      throw new error("Tried to generate route with invalid level.")
+    route = []
+    remaining_bad_routes = window.bad_routes
+    next_section = 0
     
-  newRandomTargetCanvas: (next_level) =>
-    @target_fractal.target_fractal_manager.resetCanvas()
-    @target_order = []
     for level in [1..next_level]
-      do (level) =>
+      next_section = 0
+      until (next_section != 0)
         next_section = {
           x: Math.floor(Math.random() * 4)
           y: Math.floor(Math.random() * 4)
         }
-        @target_fractal.target_fractal_manager.setCanvas(
-          next_section
-          Math.pow(@zoom_multiplier, level)
-        )
-        @target_order.push(next_section)
+        break if (level > window.bad_routes.max_depth)
         
+        if (remaining_bad_routes[next_section.x] && remaining_bad_routes[next_section.x][next_section.y])
+          remaining_bad_routes = remaining_bad_routes[next_section.x][next_section.y]
+        else
+          next_section = 0
+        
+      @target_fractal.target_fractal_manager.setCanvas(
+        next_section
+        Math.pow(@zoom_multiplier, level)
+      )
+      route.push(next_section)
+    
+    return route
+    
+  newRandomTargetCanvas: (next_level) =>
+    @target_fractal.target_fractal_manager.resetCanvas()
+    @target_order = @generateRoute(next_level)
+    
     # the target fractal is rendered on this change, not when the fractal game is rendered
     @target_fractal.trigger('change')
 

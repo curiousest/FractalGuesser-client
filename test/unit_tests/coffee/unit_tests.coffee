@@ -42,26 +42,63 @@ describe('FractalGame', ->
     it('should update the canvas coordinates for the active fractal`s fractal manager', ->
       fractal_game.startGame()
       fractal_game.zoomIn({x: 1, y: 1})
-      fractal_game.active_fractal_manager.get('bottom_right').should.eql({x: -0.75, y: 0})
+      fractal_game.active_fractal_manager.get('bottom_right').should.eql({x: 1, y: -1.25})
+    )
+  )
+  
+  describe('generateRoute(level: int)', ->
+    it('should reject unreasonable levels', ->
+      error = 0
+      try
+        route = fractal_game(-1)
+      catch error
+      error.should.not.eql(0)
+      
+      error = 0
+      try
+        route = fractal_game(50)
+      catch error
+      error.should.not.eql(0)
+    ) 
+    it('should return a route at level 1 that isn`t in the bad routes list', ->
+      route = fractal_game.generateRoute(1)
+      section = route.pop()
+      window.bad_routes[section.x][section.y].should.not.be.false
+    )
+    it('should return a route at level 2 that isn`t in the bad routes list', ->
+      route = fractal_game.generateRoute(2)
+      current_bad_route = window.bad_routes
+      while (route.length > 0)
+        section = route.pop()
+        current_bad_routes = current_bad_routes[section.x][section.y]
+        current_bad_routes.should.not.be.false
+    )
+    it('should return a route at level 5 that isn`t in the bad routes list', ->
+      route = fractal_game.generateRoute(5)
+      current_bad_route = window.bad_routes
+      while (route.length > 0)
+        section = route.pop()
+        current_bad_routes = current_bad_routes[section.x][section.y]
+        current_bad_routes.should.not.be.false
     )
   )
   
   describe('newRandomCanvas(level: int)', ->
-    it('should set the fractal manager`s top left and bottom right coordinates appropriately distant at level 1', ->
+    it('should set the target fractal manager`s top left and bottom right coordinates appropriately distant at level 1', ->
       fractal_game.newRandomTargetCanvas(1)
       top_left = fractal_game.target_fractal.target_fractal_manager.get('top_left')
       bottom_right = fractal_game.target_fractal.target_fractal_manager.get('bottom_right')
       (bottom_right.x - top_left.x).should.eql(0.875)
       (top_left.y - bottom_right.y).should.eql(0.625)
     )
-    it('should set the fractal manager`s top left and bottom right coordinates appropriately distant at level 2', ->
+    it('should set the target fractal manager`s top left and bottom right coordinates appropriately distant at level 2', ->
       fractal_game.newRandomTargetCanvas(2)
       top_left = fractal_game.target_fractal.target_fractal_manager.get('top_left')
       bottom_right = fractal_game.target_fractal.target_fractal_manager.get('bottom_right')
       (bottom_right.x - top_left.x).should.eql(0.21875)
       (top_left.y - bottom_right.y).should.eql(0.15625)
     )
-    it('should set the fractal manager`s top left and bottom right coordinates appropriately distant at level 6', ->
+    it('should set the target fractal manager`s top left and bottom right coordinates appropriately distant at level 6', ->
       fractal_game.newRandomTargetCanvas(6)
       top_left = fractal_game.target_fractal.target_fractal_manager.get('top_left')
       bottom_right = fractal_game.target_fractal.target_fractal_manager.get('bottom_right')

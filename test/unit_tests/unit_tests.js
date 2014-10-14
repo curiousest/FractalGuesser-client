@@ -57,13 +57,62 @@
           y: 1
         });
         return fractal_game.active_fractal_manager.get('bottom_right').should.eql({
-          x: -0.75,
-          y: 0
+          x: 1,
+          y: -1.25
         });
       });
     });
+    describe('generateRoute(level: int)', function() {
+      it('should reject unreasonable levels', function() {
+        var error, route;
+        error = 0;
+        try {
+          route = fractal_game(-1);
+        } catch (_error) {
+          error = _error;
+        }
+        error.should.not.eql(0);
+        error = 0;
+        try {
+          route = fractal_game(50);
+        } catch (_error) {
+          error = _error;
+        }
+        return error.should.not.eql(0);
+      });
+      it('should return a route at level 1 that isn`t in the bad routes list', function() {
+        var route, section;
+        route = fractal_game.generateRoute(1);
+        section = route.pop();
+        return window.bad_routes[section.x][section.y].should.not.be["false"];
+      });
+      it('should return a route at level 2 that isn`t in the bad routes list', function() {
+        var current_bad_route, current_bad_routes, route, section, _results;
+        route = fractal_game.generateRoute(2);
+        current_bad_route = window.bad_routes;
+        _results = [];
+        while (route.length > 0) {
+          section = route.pop();
+          current_bad_routes = current_bad_routes[section.x][section.y];
+          _results.push(current_bad_routes.should.not.be["false"]);
+        }
+        return _results;
+      });
+      return it('should return a route at level 5 that isn`t in the bad routes list', function() {
+        var current_bad_route, current_bad_routes, route, section, _results;
+        route = fractal_game.generateRoute(5);
+        current_bad_route = window.bad_routes;
+        _results = [];
+        while (route.length > 0) {
+          section = route.pop();
+          current_bad_routes = current_bad_routes[section.x][section.y];
+          _results.push(current_bad_routes.should.not.be["false"]);
+        }
+        return _results;
+      });
+    });
     return describe('newRandomCanvas(level: int)', function() {
-      it('should set the fractal manager`s top left and bottom right coordinates appropriately distant at level 1', function() {
+      it('should set the target fractal manager`s top left and bottom right coordinates appropriately distant at level 1', function() {
         var bottom_right, top_left;
         fractal_game.newRandomTargetCanvas(1);
         top_left = fractal_game.target_fractal.target_fractal_manager.get('top_left');
@@ -71,7 +120,7 @@
         (bottom_right.x - top_left.x).should.eql(0.875);
         return (top_left.y - bottom_right.y).should.eql(0.625);
       });
-      it('should set the fractal manager`s top left and bottom right coordinates appropriately distant at level 2', function() {
+      it('should set the target fractal manager`s top left and bottom right coordinates appropriately distant at level 2', function() {
         var bottom_right, top_left;
         fractal_game.newRandomTargetCanvas(2);
         top_left = fractal_game.target_fractal.target_fractal_manager.get('top_left');
@@ -79,7 +128,7 @@
         (bottom_right.x - top_left.x).should.eql(0.21875);
         return (top_left.y - bottom_right.y).should.eql(0.15625);
       });
-      return it('should set the fractal manager`s top left and bottom right coordinates appropriately distant at level 6', function() {
+      return it('should set the target fractal manager`s top left and bottom right coordinates appropriately distant at level 6', function() {
         var bottom_right, top_left;
         fractal_game.newRandomTargetCanvas(6);
         top_left = fractal_game.target_fractal.target_fractal_manager.get('top_left');

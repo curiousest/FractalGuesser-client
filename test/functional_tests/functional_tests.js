@@ -11,8 +11,9 @@
   functional_tests = {};
 
   functional_tests.peter_plays_first_level = function() {
-    var active_canvas, active_zoom, correct_fractal_section, driver, first_fractal_section, fractal_sections, message, remaining_clicks, restart_button, target_canvas, target_zoom;
+    var active_canvas, active_zoom, correct_fractal_section, driver, first_fractal_section, fractal_sections, message, remaining_clicks, restart_button, target_canvas, target_zoom, timer;
     driver = new webdriver.Builder().withCapabilities(webdriver.Capabilities.chrome()).build();
+    timer = new webdriver.promise.ControlFlow();
     driver.get('file:///home/dough/workspace/JSFractalGame/test/exampleUsage.html');
     driver.findElement(webdriver.By.id('target-fractal'));
     target_canvas = driver.findElement(webdriver.By.className('target-mandelbrot'));
