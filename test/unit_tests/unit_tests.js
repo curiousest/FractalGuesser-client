@@ -167,7 +167,7 @@
         return fractal_manager.get('top_left').should.eql(fractal_manager.get('default_top_left'));
       });
     });
-    return describe('setCanvas(target_section: {x: int, y: int}, zoom: int, old_zoom: int)', function() {
+    describe('setCanvas(target_section: {x: int, y: int}, zoom: int, old_zoom: int)', function() {
       it('should update the fractal`s top_left coordinate', function() {
         fractal_manager.setCanvas({
           x: 1,
@@ -205,6 +205,44 @@
           x: -1.1875,
           y: 0.3125
         });
+      });
+    });
+    return describe('previousCanvas()', function() {
+      it('should return the default canvas when there`s no history left to undo', function() {
+        fractal_manager.resetCanvas();
+        fractal_manager.previousCanvas();
+        fractal_manager.get('top_left').should.eql(fractal_manager.get('default_top_left'));
+        return fractal_manager.get('bottom_right').should.eql(fractal_manager.get('default_bottom_right'));
+      });
+      return it('should go back one canvas in history', function() {
+        fractal_manager.resetCanvas();
+        fractal_manager.setCanvas({
+          x: 1,
+          y: 1
+        }, 4);
+        fractal_manager.previousCanvas();
+        fractal_manager.get('top_left').should.eql(fractal_manager.get('default_top_left'));
+        fractal_manager.get('bottom_right').should.eql(fractal_manager.get('default_bottom_right'));
+        fractal_manager.setCanvas({
+          x: 1,
+          y: 1
+        }, 4);
+        fractal_manager.setCanvas({
+          x: 2,
+          y: 2
+        }, 16);
+        fractal_manager.previousCanvas();
+        fractal_manager.get('top_left').should.eql({
+          x: -1.625,
+          y: 0.625
+        });
+        fractal_manager.get('bottom_right').should.eql({
+          x: -0.75,
+          y: 0
+        });
+        fractal_manager.previousCanvas();
+        fractal_manager.get('top_left').should.eql(fractal_manager.get('default_top_left'));
+        return fractal_manager.get('bottom_right').should.eql(fractal_manager.get('default_bottom_right'));
       });
     });
   });

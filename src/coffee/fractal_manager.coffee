@@ -11,7 +11,7 @@ window.FractalManager = class extends Backbone.Model
   canvas: 0
   color_picker: pickColorHSV1
   fractal_algorithm: mandelbrotAlgorithm
-  fractal_range: 0
+  history: []
     
   constructor: (canvas_size, pixel_width, pixel_height) ->
   
@@ -27,6 +27,7 @@ window.FractalManager = class extends Backbone.Model
     @set 'pixel_height', pixel_height
     
   setCanvas: (target_section, new_zoom) ->
+    @history.push({top_left: @get('top_left'), bottom_right: @get('bottom_right')})
     offset_from_old_top_left = {
       x: target_section.x * @get('entire_width')/new_zoom
       y: target_section.y * @get('entire_height')/new_zoom
@@ -41,19 +42,16 @@ window.FractalManager = class extends Backbone.Model
       y: old_top_left.y - offset_from_old_top_left.y - @get('entire_height')/new_zoom
     }
     
-  sameSection: (other_fractal_manager) ->
-    this_top_left = @get('top_left')
-    this_bottom_right = @get('bottom_right')
-    other_top_left = other_fractal_manager.get('top_left')
-    other_bottom_right = other_fractal_manager.get('bottom_right')
-    return this_top_left.x == other_top_left.x && 
-      this_top_left.y == other_top_left.y && 
-      this_bottom_right.x == other_bottom_right.x && 
-      this_bottom_right.y == other_bottom_right.y
+  previousCanvas: =>
+    previous_canvas = @history.pop()
+    if previous_canvas?
+      @set 'top_left', previous_canvas.top_left
+      @set 'bottom_right', previous_canvas.bottom_right
     
   resetCanvas: ->
     @set 'top_left', @get 'default_top_left'
     @set 'bottom_right', @get 'default_bottom_right'
+    @history = []
     
 window.FractalManagerView = class extends Backbone.View
   template: _.template("<canvas style='position:absolute;' width='<%= pixel_width %>' height='<%= pixel_height %>'> </canvas>")
