@@ -73,7 +73,7 @@
       new_zoom = this.get('zoom') * this.zoom_multiplier;
       this.active_fractal_manager.setCanvas(picked_section, new_zoom);
       this.set('zoom', new_zoom);
-      correct_section = this.target_order.pop();
+      correct_section = this.target_order.shift();
       if (!(correct_section.x === picked_section.x && correct_section.y === picked_section.y)) {
         this.on_correct_route = false;
       }
@@ -107,7 +107,7 @@
           if (level > window.bad_routes.max_depth) {
             break;
           }
-          if (remaining_bad_routes[next_section.x] && remaining_bad_routes[next_section.x][next_section.y]) {
+          if (remaining_bad_routes[next_section.x] && remaining_bad_routes[next_section.x][next_section.y] && !$.isEmptyObject(remaining_bad_routes[next_section.x][next_section.y])) {
             remaining_bad_routes = remaining_bad_routes[next_section.x][next_section.y];
           } else {
             next_section = 0;

@@ -9,6 +9,9 @@ task 'build', 'Build all project coffee files from coffee/*.coffee to *.js', ->
   exec 'coffee --compile --output test/functional_tests/ test/functional_tests/coffee/', (err, stdout, stderr) ->
     throw err if err
     console.log stdout + stderr
+  exec 'coffee --compile --output scripts/ scripts/coffee/', (err, stdout, stderr) ->
+    throw err if err
+    console.log stdout + stderr
 
 task 'watch', 'Watch coffee directories for changes', ->
   coffee = spawn 'coffee', ['-w', '-c', '-o', 'test/unit_tests/coffee', 'test/unit_tests']

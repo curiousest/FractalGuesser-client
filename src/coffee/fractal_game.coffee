@@ -45,7 +45,7 @@ window.FractalGame = class extends Backbone.Model
     new_zoom = @get('zoom') * @zoom_multiplier
     @active_fractal_manager.setCanvas(picked_section, new_zoom)
     @set 'zoom', new_zoom
-    correct_section = @target_order.pop()
+    correct_section = @target_order.shift()
     if !(correct_section.x == picked_section.x && correct_section.y == picked_section.y)
       @on_correct_route = false
     if (new_zoom == @get('max_zoom'))
@@ -74,7 +74,7 @@ window.FractalGame = class extends Backbone.Model
         }
         break if (level > window.bad_routes.max_depth)
         
-        if (remaining_bad_routes[next_section.x] && remaining_bad_routes[next_section.x][next_section.y])
+        if (remaining_bad_routes[next_section.x] && remaining_bad_routes[next_section.x][next_section.y] && !$.isEmptyObject(remaining_bad_routes[next_section.x][next_section.y]))
           remaining_bad_routes = remaining_bad_routes[next_section.x][next_section.y]
         else
           next_section = 0
