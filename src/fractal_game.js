@@ -21,6 +21,8 @@
 
     _Class.prototype.on_correct_route = true;
 
+    _Class.prototype.clicks_remaining = 1;
+
     _Class.prototype.defaults = {
       zoom: 1,
       level: 1,
@@ -33,7 +35,6 @@
       this.generateRoute = __bind(this.generateRoute, this);
       this.zoomIn = __bind(this.zoomIn, this);
       this.startGame = __bind(this.startGame, this);
-      this.endLevel = __bind(this.endLevel, this);
       this.startLevel = __bind(this.startLevel, this);
       var target_fractal_manager;
       Backbone.Model.apply(this);
@@ -45,19 +46,13 @@
     }
 
     _Class.prototype.startLevel = function(this_level) {
-      this.newRandomTargetCanvas(this_level);
-      this.active_fractal_manager.resetCanvas();
+      this.clicks_remaining = this_level;
       this.set('level', this_level);
       this.set('zoom', 1);
-      return this.set('max_zoom', Math.pow(this.zoom_multiplier, this_level));
-    };
-
-    _Class.prototype.endLevel = function() {
-      if (this.on_correct_route) {
-        return this.startLevel(this.get('level') + 1);
-      } else {
-        return this.set('fractal_game_message', "Incorrect choice. Sorry, you picked the wrong route. Refresh to try again...or keep zooming in...");
-      }
+      this.set('max_zoom', Math.pow(this.zoom_multiplier, this_level));
+      this.active_fractal_manager.resetCanvas();
+      this.set('fractal_game_message', "Level " + this.get('level') + " in progress...");
+      return this.newRandomTargetCanvas(this_level);
     };
 
     _Class.prototype.startGame = function() {
@@ -70,6 +65,7 @@
         return;
       }
       this.zoom_lock = true;
+      this.clicks_remaining -= 1;
       new_zoom = this.get('zoom') * this.zoom_multiplier;
       this.active_fractal_manager.setCanvas(picked_section, new_zoom);
       this.set('zoom', new_zoom);
@@ -78,12 +74,17 @@
         this.on_correct_route = false;
       }
       if (new_zoom === this.get('max_zoom')) {
-        return setTimeout((function(_this) {
-          return function() {
-            _this.endLevel();
-            return _this.zoom_lock = false;
-          };
-        })(this), 1000);
+        if (this.on_correct_route) {
+          this.set('fractal_game_message', "Correct! Level " + this.get('level') + " completed...");
+          return setTimeout((function(_this) {
+            return function() {
+              _this.startLevel(_this.get('level') + 1);
+              return _this.zoom_lock = false;
+            };
+          })(this), 1000);
+        } else {
+          return this.set('fractal_game_message', "Incorrect choice. Sorry, you picked the wrong route. Refresh to play again.");
+        }
       } else {
         return this.zoom_lock = false;
       }
@@ -139,7 +140,7 @@
       y: 0
     };
 
-    _Class.prototype.template = _.template("<div id='fractal-game-message'> <%= fractal_game_message %> </div> <div class='canvas-header'> Current zoom: <span id='active-zoom' class='zoom'>x<%= zoom %></span> <br/> Target zoom: <span id='target-zoom' class='zoom'>x<%= max_zoom %></span> <br/> Clicks remaining: <span id='remaining-clicks'><%= remaining_clicks %></span> </div> <div id='active-canvas' style='position:relative;'> <div class='active-mandelbrot' /> <div class='fractal-sections' /> </div>");
+    _Class.prototype.template = _.template("<div id='fractal-game-message'> <%= fractal_game_message %> </div> <div class='canvas-header'> Current zoom: <span id='active-zoom' class='zoom'>x<%= zoom %></span> <br/> Target zoom: <span id='target-zoom' class='zoom'>x<%= max_zoom %></span> <br/> Clicks remaining: <span id='clicks_remaining'><%= clicks_remaining %></span> </div> <div id='active-canvas' style='position:relative;'> <div class='active-mandelbrot' /> <div class='fractal-sections' /> </div>");
 
     function _Class(options) {
       if (options == null) {
@@ -180,7 +181,7 @@
       this.$el.html(this.template({
         'zoom': this.model.get('zoom'),
         'max_zoom': this.model.get('max_zoom'),
-        'remaining_clicks': this.model.get('max_zoom') / this.model.zoom_multiplier - Math.floor(this.model.get('zoom') / this.model.zoom_multiplier),
+        'clicks_remaining': this.model.clicks_remaining,
         'CANVAS_PIXEL_WIDTH': this.model.CANVAS_PIXEL_WIDTH,
         'CANVAS_PIXEL_HEIGHT': this.model.CANVAS_PIXEL_HEIGHT,
         'fractal_game_message': this.model.get('fractal_game_message')

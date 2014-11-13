@@ -32,7 +32,7 @@
 
     _Class.prototype.canvas = 0;
 
-    _Class.prototype.color_picker = pickColorHSV1;
+    _Class.prototype.color_picker = pickColorHSV1Gradient;
 
     _Class.prototype.fractal_algorithm = mandelbrotAlgorithm;
 

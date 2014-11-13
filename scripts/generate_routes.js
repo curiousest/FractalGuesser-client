@@ -19,7 +19,7 @@
       this.checkRoutes = __bind(this.checkRoutes, this);
       this.pickColorHSV1_CheckColor = __bind(this.pickColorHSV1_CheckColor, this);
       var canvas_attribute;
-      this.max_depth = 3;
+      this.max_depth = 4;
       this.fractal_manager = new window.FractalManager(MANDELBROT_CANVAS_SIZE, 400, 285);
       this.bad_routes = {
         max_depth: this.max_depth

@@ -7,7 +7,7 @@ window.RouteGenerator = class
   has_colored_pixel = false
   
   constructor: ->
-    @max_depth = 3
+    @max_depth = 4
     @fractal_manager = new window.FractalManager(MANDELBROT_CANVAS_SIZE, 400, 285)
     @bad_routes = {max_depth: @max_depth}
     

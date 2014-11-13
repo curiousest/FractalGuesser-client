@@ -9,7 +9,7 @@ window.FractalManager = class extends Backbone.Model
     pixel_width: 0
     pixel_height: 0
   canvas: 0
-  color_picker: pickColorHSV1
+  color_picker: pickColorHSV1Gradient
   fractal_algorithm: mandelbrotAlgorithm
   history: []
     

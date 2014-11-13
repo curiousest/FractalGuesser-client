@@ -6,6 +6,7 @@ window.FractalGame = class extends Backbone.Model
   zoom_multiplier: 4
   target_order: []
   on_correct_route: true
+  clicks_remaining : 1
   
   defaults:
     zoom: 1
@@ -22,17 +23,13 @@ window.FractalGame = class extends Backbone.Model
     @target_fractal = new window.TargetFractal(target_fractal_manager)
     
   startLevel: (this_level) =>
-    @newRandomTargetCanvas(this_level)
-    @active_fractal_manager.resetCanvas()
+    @clicks_remaining = this_level
     @set 'level', this_level
     @set 'zoom', 1
     @set 'max_zoom', Math.pow(@zoom_multiplier, this_level)
-    
-  endLevel: =>
-    if(@on_correct_route)
-      @startLevel(@get('level') + 1)
-    else
-      @set('fractal_game_message', "Incorrect choice. Sorry, you picked the wrong route. Refresh to try again...or keep zooming in...")
+    @active_fractal_manager.resetCanvas()
+    @set('fractal_game_message', "Level " + @get('level') + " in progress...")
+    @newRandomTargetCanvas(this_level)
     
   startGame: =>
     @startLevel(1)
@@ -42,6 +39,7 @@ window.FractalGame = class extends Backbone.Model
     return if @zoom_lock
     @zoom_lock = true
     
+    @clicks_remaining -= 1
     new_zoom = @get('zoom') * @zoom_multiplier
     @active_fractal_manager.setCanvas(picked_section, new_zoom)
     @set 'zoom', new_zoom
@@ -49,12 +47,17 @@ window.FractalGame = class extends Backbone.Model
     if !(correct_section.x == picked_section.x && correct_section.y == picked_section.y)
       @on_correct_route = false
     if (new_zoom == @get('max_zoom'))
-      setTimeout(
-        => 
-          @endLevel()
-          @zoom_lock = false
-        1000
-      )
+      if(@on_correct_route)
+        @set('fractal_game_message', "Correct! Level " + @get('level') + " completed...")
+        setTimeout(
+          => 
+            @startLevel(@get('level') + 1)
+            @zoom_lock = false
+          1000
+        )
+      else
+        @set('fractal_game_message', "Incorrect choice. Sorry, you picked the wrong route. Refresh to play again.")
+      
     else
       @zoom_lock = false
       
@@ -108,7 +111,7 @@ window.FractalGameView = class extends Backbone.View
       <br/>
       Target zoom: <span id='target-zoom' class='zoom'>x<%= max_zoom %></span>
       <br/>
-      Clicks remaining: <span id='remaining-clicks'><%= remaining_clicks %></span>
+      Clicks remaining: <span id='clicks_remaining'><%= clicks_remaining %></span>
     </div>
     <div id='active-canvas' style='position:relative;'>
         <div class='active-mandelbrot' />
@@ -152,7 +155,7 @@ window.FractalGameView = class extends Backbone.View
     @$el.html(@template({
       'zoom':@model.get('zoom')
       'max_zoom': @model.get('max_zoom')
-      'remaining_clicks': @model.get('max_zoom')/@model.zoom_multiplier - Math.floor(@model.get('zoom')/@model.zoom_multiplier)
+      'clicks_remaining': @model.clicks_remaining
       'CANVAS_PIXEL_WIDTH': @model.CANVAS_PIXEL_WIDTH
       'CANVAS_PIXEL_HEIGHT': @model.CANVAS_PIXEL_HEIGHT
       'fractal_game_message' : @model.get('fractal_game_message')
