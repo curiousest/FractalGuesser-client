@@ -2,14 +2,14 @@ window.RouteGenerator = class
 
   fractal_manager = null
   dummy_canvas = null
-  bad_routes = null
+  routes = null
   pixels_checked = 0
   has_colored_pixel = false
   
   constructor: ->
-    @max_depth = 4
+    @max_depth = 3
     @fractal_manager = new window.FractalManager(MANDELBROT_CANVAS_SIZE, 400, 285)
-    @bad_routes = {max_depth: @max_depth}
+    @routes = {max_depth: @max_depth}
     
     @dummy_canvas = document.createElement('canvas')
     canvas_attribute = document.createAttribute("width")
@@ -69,11 +69,47 @@ window.RouteGenerator = class
        
         @fractal_manager.previousCanvas()
         
+  # breadth-first iteration through the routes object that inserts the data one route at a time into server_url
+  insertRoutes: (server_url) =>
+    route_queue = []
+    route_queue.push({level: 0, route: '[', remaining_routes: @routes})
+    route_id = -1
+    current_level = 0
+    while(route_queue.length > 0)
+      current_route = route_queue.shift()
+      route_id++
+      if (current_route.level != current_level)
+        current_level++
+        console.log("Level " + current_level + " begins at id=" + route_id)
+      $.ajax({
+            url: server_url,
+            type: "POST",
+            crossDomain: true,
+            data: {level: current_route.level, route: current_route.route + ']', route_id: route_id}
+            dataType: "json",
+      })
+      if (current_route.level == @max_depth)
+        continue
+      for x_section in [0..3]
+        for y_section in [0..3]
+          if (current_route.remaining_routes[x_section] && 
+          current_route.remaining_routes[x_section][y_section] && 
+          !$.isEmptyObject(current_route.remaining_routes[x_section][y_section]))
+            new_route = {level: current_route.level + 1, route: current_route.route, remaining_routes: current_route.remaining_routes[x_section][y_section]}
+            # don't add a comma for the first section in the array
+            if (new_route.route.length != 1)
+              new_route.route = new_route.route + ','
+            new_route.route = new_route.route + '{' + x_section + ',' + y_section + '}'  
+            route_queue.push(new_route)
+        
 $(document).ready(->
   route_generator = new window.RouteGenerator
-  route_generator.checkRoutes(route_generator.bad_routes, 0)
-  console.log(route_generator.bad_routes)
-  str = JSON.stringify(route_generator.bad_routes)
-  console.log(str)
+  route_generator.checkRoutes(route_generator.routes, 0)
+  csrftoken = $.cookie('csrftoken')
+  $.ajaxSetup({
+    beforeSend: (xhr, settings) ->
+      xhr.setRequestHeader("X-CSRFToken", csrftoken)
+  })
+  route_generator.insertRoutes('http://localhost:8000/api/insert/')
 )
 
