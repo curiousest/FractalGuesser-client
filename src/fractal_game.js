@@ -90,40 +90,39 @@
       }
     };
 
-    _Class.prototype.generateRoute = function(next_level) {
-      var level, next_section, remaining_bad_routes, route, _i;
+    _Class.prototype.generateRoute = function(next_level, success_function, error_function) {
+      var next_section;
       if (next_level < 0 || next_level > 20) {
         throw new error("Tried to generate route with invalid level.");
       }
-      route = [];
-      remaining_bad_routes = window.bad_routes;
       next_section = 0;
-      for (level = _i = 1; 1 <= next_level ? _i <= next_level : _i >= next_level; level = 1 <= next_level ? ++_i : --_i) {
-        next_section = 0;
-        while (!(next_section !== 0)) {
-          next_section = {
-            x: Math.floor(Math.random() * 4),
-            y: Math.floor(Math.random() * 4)
-          };
-          if (level > window.bad_routes.max_depth) {
-            break;
-          }
-          if (remaining_bad_routes[next_section.x] && remaining_bad_routes[next_section.x][next_section.y] && !$.isEmptyObject(remaining_bad_routes[next_section.x][next_section.y])) {
-            remaining_bad_routes = remaining_bad_routes[next_section.x][next_section.y];
-          } else {
-            next_section = 0;
-          }
-        }
-        this.target_fractal.target_fractal_manager.setCanvas(next_section, Math.pow(this.zoom_multiplier, level));
-        route.push(next_section);
-      }
-      return route;
+      return $.ajax({
+        url: window.fractal_api_url + "generate/" + next_level,
+        type: "GET",
+        success: function(data) {
+          return success_function(JSON.parse(data));
+        },
+        failure: error_function
+      });
     };
 
     _Class.prototype.newRandomTargetCanvas = function(next_level) {
       this.target_fractal.target_fractal_manager.resetCanvas();
-      this.target_order = this.generateRoute(next_level);
-      return this.target_fractal.trigger('change');
+      return this.generateRoute(next_level, (function(_this) {
+        return function(generated_route) {
+          var level, section, _i, _len;
+          _this.target_order = generated_route;
+          level = 0;
+          for (_i = 0, _len = generated_route.length; _i < _len; _i++) {
+            section = generated_route[_i];
+            level++;
+            _this.target_fractal.target_fractal_manager.setCanvas(section, Math.pow(_this.zoom_multiplier, level));
+          }
+          return _this.target_fractal.trigger('change');
+        };
+      })(this), function(failure_message) {
+        return alert("Failed to reach fractal-generating server with error: " + failure_message);
+      });
     };
 
     return _Class;

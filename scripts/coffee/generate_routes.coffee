@@ -7,7 +7,7 @@ window.RouteGenerator = class
   has_colored_pixel = false
   
   constructor: ->
-    @max_depth = 3
+    @max_depth = 2
     @fractal_manager = new window.FractalManager(MANDELBROT_CANVAS_SIZE, 400, 285)
     @routes = {max_depth: @max_depth}
     
@@ -99,8 +99,9 @@ window.RouteGenerator = class
             # don't add a comma for the first section in the array
             if (new_route.route.length != 1)
               new_route.route = new_route.route + ','
-            new_route.route = new_route.route + '{' + x_section + ',' + y_section + '}'  
+            new_route.route = new_route.route + '{"x":' + x_section + ',"y":' + y_section + '}'  
             route_queue.push(new_route)
+    console.log("Ends at id=" + route_id)
         
 $(document).ready(->
   route_generator = new window.RouteGenerator

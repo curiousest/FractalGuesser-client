@@ -20,7 +20,7 @@
       this.checkRoutes = __bind(this.checkRoutes, this);
       this.pickColorHSV1_CheckColor = __bind(this.pickColorHSV1_CheckColor, this);
       var canvas_attribute;
-      this.max_depth = 3;
+      this.max_depth = 2;
       this.fractal_manager = new window.FractalManager(MANDELBROT_CANVAS_SIZE, 400, 285);
       this.routes = {
         max_depth: this.max_depth
@@ -88,7 +88,7 @@
     };
 
     _Class.prototype.insertRoutes = function(server_url) {
-      var current_level, current_route, new_route, route_id, route_queue, x_section, y_section, _results;
+      var current_level, current_route, new_route, route_id, route_queue, x_section, y_section, _i, _j;
       route_queue = [];
       route_queue.push({
         level: 0,
@@ -97,7 +97,6 @@
       });
       route_id = -1;
       current_level = 0;
-      _results = [];
       while (route_queue.length > 0) {
         current_route = route_queue.shift();
         route_id++;
@@ -119,36 +118,24 @@
         if (current_route.level === this.max_depth) {
           continue;
         }
-        _results.push((function() {
-          var _i, _results1;
-          _results1 = [];
-          for (x_section = _i = 0; _i <= 3; x_section = ++_i) {
-            _results1.push((function() {
-              var _j, _results2;
-              _results2 = [];
-              for (y_section = _j = 0; _j <= 3; y_section = ++_j) {
-                if (current_route.remaining_routes[x_section] && current_route.remaining_routes[x_section][y_section] && !$.isEmptyObject(current_route.remaining_routes[x_section][y_section])) {
-                  new_route = {
-                    level: current_route.level + 1,
-                    route: current_route.route,
-                    remaining_routes: current_route.remaining_routes[x_section][y_section]
-                  };
-                  if (new_route.route.length !== 1) {
-                    new_route.route = new_route.route + ',';
-                  }
-                  new_route.route = new_route.route + '{' + x_section + ',' + y_section + '}';
-                  _results2.push(route_queue.push(new_route));
-                } else {
-                  _results2.push(void 0);
-                }
+        for (x_section = _i = 0; _i <= 3; x_section = ++_i) {
+          for (y_section = _j = 0; _j <= 3; y_section = ++_j) {
+            if (current_route.remaining_routes[x_section] && current_route.remaining_routes[x_section][y_section] && !$.isEmptyObject(current_route.remaining_routes[x_section][y_section])) {
+              new_route = {
+                level: current_route.level + 1,
+                route: current_route.route,
+                remaining_routes: current_route.remaining_routes[x_section][y_section]
+              };
+              if (new_route.route.length !== 1) {
+                new_route.route = new_route.route + ',';
               }
-              return _results2;
-            })());
+              new_route.route = new_route.route + '{"x":' + x_section + ',"y":' + y_section + '}';
+              route_queue.push(new_route);
+            }
           }
-          return _results1;
-        })());
+        }
       }
-      return _results;
+      return console.log("Ends at id=" + route_id);
     };
 
     return _Class;

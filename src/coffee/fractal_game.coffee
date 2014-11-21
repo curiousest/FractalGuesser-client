@@ -61,41 +61,36 @@ window.FractalGame = class extends Backbone.Model
     else
       @zoom_lock = false
       
-  generateRoute: (next_level) =>
+  generateRoute: (next_level, success_function, error_function) =>
     if (next_level < 0 || next_level > 20)
       throw new error("Tried to generate route with invalid level.")
-    route = []
-    remaining_bad_routes = window.bad_routes
     next_section = 0
-    
-    for level in [1..next_level]
-      next_section = 0
-      until (next_section != 0)
-        next_section = {
-          x: Math.floor(Math.random() * 4)
-          y: Math.floor(Math.random() * 4)
-        }
-        break if (level > window.bad_routes.max_depth)
-        
-        if (remaining_bad_routes[next_section.x] && remaining_bad_routes[next_section.x][next_section.y] && !$.isEmptyObject(remaining_bad_routes[next_section.x][next_section.y]))
-          remaining_bad_routes = remaining_bad_routes[next_section.x][next_section.y]
-        else
-          next_section = 0
-        
-      @target_fractal.target_fractal_manager.setCanvas(
-        next_section
-        Math.pow(@zoom_multiplier, level)
-      )
-      route.push(next_section)
-    
-    return route
+    $.ajax({
+      url: window.fractal_api_url + "generate/" + next_level,
+      type: "GET",
+      success: (data) ->
+        success_function(JSON.parse(data))
+      failure: error_function
+    })
     
   newRandomTargetCanvas: (next_level) =>
     @target_fractal.target_fractal_manager.resetCanvas()
-    @target_order = @generateRoute(next_level)
-    
-    # the target fractal is rendered on this change, not when the fractal game is rendered
-    @target_fractal.trigger('change')
+    @generateRoute(next_level, 
+      (generated_route) =>
+        @target_order = generated_route
+        level = 0
+        for section in generated_route
+          level++
+          @target_fractal.target_fractal_manager.setCanvas(
+            section
+            Math.pow(@zoom_multiplier, level)
+          )
+        # the target fractal is rendered on this change, not when the fractal game is rendered
+        @target_fractal.trigger('change')
+        
+      (failure_message) ->
+        alert("Failed to reach fractal-generating server with error: " + failure_message)
+    )  
 
 window.FractalGameView = class extends Backbone.View
   
