@@ -43,7 +43,7 @@
       this.initialize = __bind(this.initialize, this);
       _Class.__super__.constructor.apply(this, arguments);
       this.el.classList.add('fractal-section');
-      this.el.setAttribute('style', 'top: ' + this.model.top_left.y + 'px; ' + 'left: ' + this.model.top_left.x + 'px; ' + 'border: 1px; ' + 'border-style: solid;' + 'min-width: ' + this.model.width + 'px; ' + 'min-height: ' + this.model.height + 'px; ' + 'z-index: 99;' + 'position: absolute;');
+      this.el.setAttribute('style', 'top: ' + this.model.top_left.y + 'px; ' + 'left: ' + this.model.top_left.x + 'px; ' + 'min-width: ' + this.model.width + 'px; ' + 'min-height: ' + this.model.height + 'px; ');
       this.$el.html('&nbsp');
     }
 

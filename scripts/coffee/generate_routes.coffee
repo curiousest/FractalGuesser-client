@@ -7,7 +7,7 @@ window.RouteGenerator = class
   has_colored_pixel = false
   
   constructor: ->
-    @max_depth = 2
+    @max_depth = 3
     @fractal_manager = new window.FractalManager(MANDELBROT_CANVAS_SIZE, 400, 285)
     @routes = {max_depth: @max_depth}
     
@@ -111,6 +111,6 @@ $(document).ready(->
     beforeSend: (xhr, settings) ->
       xhr.setRequestHeader("X-CSRFToken", csrftoken)
   })
-  route_generator.insertRoutes('http://localhost:8000/api/insert/')
+  route_generator.insertRoutes('http://localhost:8000/api/insert/mandelbrot/')
 )
 

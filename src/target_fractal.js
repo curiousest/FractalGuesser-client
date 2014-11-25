@@ -10,6 +10,7 @@
     function _Class(target_fractal_manager) {
       Backbone.Model.apply(this);
       this.target_fractal_manager = target_fractal_manager;
+      this.zoom = 1;
     }
 
     return _Class;
@@ -19,7 +20,7 @@
   window.TargetFractalView = (function(_super) {
     __extends(_Class, _super);
 
-    _Class.prototype.template = _.template("<div id='target-canvas'> <div class='target-mandelbrot' /> </div>");
+    _Class.prototype.template = _.template("<div id='target-canvas'> <div class='target-mandelbrot' /> <span id='target-zoom' class='zoom fractal-game-text'>x<%= zoom %></span> </div>");
 
     function _Class(options) {
       if (options == null) {
@@ -44,7 +45,9 @@
     };
 
     _Class.prototype.render = function() {
-      this.$el.html(this.template());
+      this.$el.html(this.template({
+        'zoom': this.model.zoom
+      }));
       return this.assign(this.fractal_manager_view, '.target-mandelbrot');
     };
 

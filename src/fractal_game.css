@@ -1,0 +1,36 @@
+.fractal-game-text {
+  color: white;
+  background-color: transparent;
+}
+
+.zoom {
+    position: absolute;
+    z-index: 9;
+    left: 950px;
+    padding: 5px;
+    border: 2px;
+    border-style: solid;
+    border-color: white;
+}
+#clicks-remaining {
+  position: absolute;
+  z-index: 9;
+  top: 5px;
+  left: 880px;
+}
+
+.fractal-header {
+  position: absolute;
+  z-index: 9;
+  padding: 5px;
+}
+
+#fractal-game-message {
+}
+
+.fractal-section {
+  border: 1px;
+  border-style: solid;
+  z-index: 8;
+  position: absolute;
+}

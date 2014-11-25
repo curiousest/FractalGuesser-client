@@ -21,12 +21,8 @@ window.FractalSectionView = class extends Backbone.View
     @el.setAttribute('style',
       'top: ' + @model.top_left.y + 'px; ' +
       'left: ' + @model.top_left.x + 'px; ' +
-      'border: 1px; ' +
-      'border-style: solid;' +
       'min-width: ' + @model.width + 'px; ' +
-      'min-height: ' + @model.height + 'px; ' +
-      'z-index: 99;' +
-      'position: absolute;'
+      'min-height: ' + @model.height + 'px; '
     )
     @$el.html('&nbsp')
 

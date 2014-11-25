@@ -11,9 +11,10 @@
 
     _Class.prototype.SECTION_COLUMN_COUNT = 4;
 
-    _Class.prototype.CANVAS_PIXEL_WIDTH = 400;
-
-    _Class.prototype.CANVAS_PIXEL_HEIGHT = 285;
+    _Class.prototype.API_CANVAS_SIZE = {
+      width: 400,
+      height: 285
+    };
 
     _Class.prototype.zoom_multiplier = 4;
 
@@ -30,28 +31,40 @@
       fractal_game_message: "Click to zoom in. Try to zoom in to the exact location of the fractal on the left."
     };
 
-    function _Class(canvas_size) {
+    function _Class(pixel_canvas_size, cartesian_canvas_size) {
       this.newRandomTargetCanvas = __bind(this.newRandomTargetCanvas, this);
       this.generateRoute = __bind(this.generateRoute, this);
+      this.nextLevelButtonPressed = __bind(this.nextLevelButtonPressed, this);
       this.zoomIn = __bind(this.zoomIn, this);
       this.startGame = __bind(this.startGame, this);
       this.startLevel = __bind(this.startLevel, this);
       var target_fractal_manager;
       Backbone.Model.apply(this);
-      this.x_section_size = this.CANVAS_PIXEL_WIDTH / this.SECTION_COLUMN_COUNT;
-      this.y_section_size = this.CANVAS_PIXEL_HEIGHT / this.SECTION_ROW_COUNT;
-      this.active_fractal_manager = new window.FractalManager(canvas_size, this.CANVAS_PIXEL_WIDTH, this.CANVAS_PIXEL_HEIGHT);
-      target_fractal_manager = new window.FractalManager(canvas_size, this.CANVAS_PIXEL_WIDTH, this.CANVAS_PIXEL_HEIGHT);
+      if (pixel_canvas_size.width / pixel_canvas_size.height > this.API_CANVAS_SIZE.width / this.API_CANVAS_SIZE.height) {
+        this.active_canvas_pixel_height = pixel_canvas_size.height;
+        this.active_canvas_pixel_width = Math.floor(pixel_canvas_size.height * (this.API_CANVAS_SIZE.width / this.API_CANVAS_SIZE.height));
+      } else {
+        this.active_canvas_pixel_width = pixel_canvas_size.width;
+        this.active_canvas_pixel_height = Math.floor(pixel_canvas_size.width * (this.API_CANVAS_SIZE.height / this.API_CANVAS_SIZE.width));
+      }
+      this.target_canvas_pixel_width = this.active_canvas_pixel_width;
+      this.target_canvas_pixel_height = this.active_canvas_pixel_height;
+      this.active_fractal_manager = new window.FractalManager(cartesian_canvas_size, this.active_canvas_pixel_width, this.active_canvas_pixel_height);
+      target_fractal_manager = new window.FractalManager(cartesian_canvas_size, this.target_canvas_pixel_width, this.target_canvas_pixel_height);
       this.target_fractal = new window.TargetFractal(target_fractal_manager);
     }
 
     _Class.prototype.startLevel = function(this_level) {
+      this.may_play_next_level = false;
       this.clicks_remaining = this_level;
       this.set('level', this_level);
       this.set('zoom', 1);
       this.set('max_zoom', Math.pow(this.zoom_multiplier, this_level));
       this.active_fractal_manager.resetCanvas();
       this.set('fractal_game_message', "Level " + this.get('level') + " in progress...");
+      $('#target-canvas').css('visibility', 'visible');
+      $('#active-canvas').css('visibility', 'hidden');
+      $('#next-level-button').css('visibility', 'hidden');
       return this.newRandomTargetCanvas(this_level);
     };
 
@@ -61,14 +74,13 @@
 
     _Class.prototype.zoomIn = function(picked_section) {
       var correct_section, new_zoom;
-      if (this.zoom_lock) {
-        return;
-      }
-      this.zoom_lock = true;
-      this.clicks_remaining -= 1;
       new_zoom = this.get('zoom') * this.zoom_multiplier;
       this.active_fractal_manager.setCanvas(picked_section, new_zoom);
       this.set('zoom', new_zoom);
+      if (this.may_play_next_level || this.game_over) {
+        return;
+      }
+      this.clicks_remaining -= 1;
       correct_section = this.target_order.shift();
       if (!(correct_section.x === picked_section.x && correct_section.y === picked_section.y)) {
         this.on_correct_route = false;
@@ -76,17 +88,20 @@
       if (new_zoom === this.get('max_zoom')) {
         if (this.on_correct_route) {
           this.set('fractal_game_message', "Correct! Level " + this.get('level') + " completed...");
-          return setTimeout((function(_this) {
-            return function() {
-              _this.startLevel(_this.get('level') + 1);
-              return _this.zoom_lock = false;
-            };
-          })(this), 1000);
+          $('#next-level-button').css('visibility', 'visible');
+          return this.may_play_next_level = true;
         } else {
-          return this.set('fractal_game_message', "Incorrect choice. Sorry, you picked the wrong route. Refresh to play again.");
+          this.set('fractal_game_message', "Incorrect choice. Sorry, you picked the wrong route. Refresh to play again.");
+          this.may_play_next_level = false;
+          return this.game_over = true;
         }
-      } else {
-        return this.zoom_lock = false;
+      }
+    };
+
+    _Class.prototype.nextLevelButtonPressed = function() {
+      if (this.may_play_next_level) {
+        this.startLevel(this.get('level') + 1);
+        return $('#next-level-button').css('visibility', 'hidden');
       }
     };
 
@@ -118,7 +133,9 @@
             level++;
             _this.target_fractal.target_fractal_manager.setCanvas(section, Math.pow(_this.zoom_multiplier, level));
           }
-          return _this.target_fractal.trigger('change');
+          _this.target_fractal.zoom = Math.pow(_this.zoom_multiplier, level);
+          _this.target_fractal.trigger('change');
+          return $('#target-fractal').css('visibility', 'visible');
         };
       })(this), function(failure_message) {
         return alert("Failed to reach fractal-generating server with error: " + failure_message);
@@ -139,7 +156,7 @@
       y: 0
     };
 
-    _Class.prototype.template = _.template("<div id='fractal-game-message'> <%= fractal_game_message %> </div> <div class='canvas-header'> Current zoom: <span id='active-zoom' class='zoom'>x<%= zoom %></span> <br/> Target zoom: <span id='target-zoom' class='zoom'>x<%= max_zoom %></span> <br/> Clicks remaining: <span id='clicks_remaining'><%= clicks_remaining %></span> </div> <div id='active-canvas' style='position:relative;'> <div class='active-mandelbrot' /> <div class='fractal-sections' /> </div>");
+    _Class.prototype.template = _.template("<div class='fractal-header'> <button id='toggle-target-fractal'>Show/Hide Target</button> <button id='next-level-button'>Play Next Level</button> <span class='fractal-game-text' id='fractal-game-message'> <%= fractal_game_message %> </span> </div> <div id='active-canvas' style='position:relative;'> <div class='active-mandelbrot' /> <div class='fractal-sections' /> <span id='active-zoom' class='zoom fractal-game-text'>x<%= zoom %></span> <span id='clicks-remaining' class='fractal-game-text'>Clicks: <%= clicks_remaining %></span> </div>");
 
     function _Class(options) {
       if (options == null) {
@@ -149,8 +166,8 @@
       this.initialize = __bind(this.initialize, this);
       this.model = options.model, this.classname = options.classname;
       this.fractal_sections = new window.FractalSections({
-        width: this.model.CANVAS_PIXEL_WIDTH,
-        height: this.model.CANVAS_PIXEL_HEIGHT,
+        width: this.model.active_canvas_pixel_width,
+        height: this.model.active_canvas_pixel_height,
         on_click_function: this.model.zoomIn
       });
       this.fractal_sections_view = new window.FractalSectionsView(this.fractal_sections);
@@ -167,8 +184,7 @@
       this.render();
       this.fractal_sections_view.initialize();
       this.active_fractal_manager_view.initialize();
-      this.model.newRandomTargetCanvas(1);
-      return this.target_fractal_view.initialize();
+      return this.model.startGame();
     };
 
     _Class.prototype.assign = function(view, selector) {
@@ -176,15 +192,30 @@
       return view.render();
     };
 
+    _Class.prototype.toggleVisibleFractal = function() {
+      var active_fractal, target_fractal;
+      target_fractal = $('#target-canvas');
+      active_fractal = $('#active-canvas');
+      if (target_fractal.css('visibility') === 'hidden') {
+        target_fractal.css('visibility', 'visible');
+        return active_fractal.css('visibility', 'hidden');
+      } else {
+        target_fractal.css('visibility', 'hidden');
+        return active_fractal.css('visibility', 'visible');
+      }
+    };
+
     _Class.prototype.render = function() {
       this.$el.html(this.template({
         'zoom': this.model.get('zoom'),
         'max_zoom': this.model.get('max_zoom'),
         'clicks_remaining': this.model.clicks_remaining,
-        'CANVAS_PIXEL_WIDTH': this.model.CANVAS_PIXEL_WIDTH,
-        'CANVAS_PIXEL_HEIGHT': this.model.CANVAS_PIXEL_HEIGHT,
+        'active_canvas_pixel_width': this.model.active_canvas_pixel_width,
+        'active_canvas_pixel_height': this.model.active_canvas_pixel_height,
         'fractal_game_message': this.model.get('fractal_game_message')
       }));
+      $('#toggle-target-fractal').on('click', this.toggleVisibleFractal);
+      $('#next-level-button').on('click', this.model.nextLevelButtonPressed);
       this.assign(this.active_fractal_manager_view, '.active-mandelbrot');
       return this.assign(this.fractal_sections_view, '.fractal-sections');
     };
