@@ -34,7 +34,7 @@
       this.dummy_canvas.setAttributeNode(canvas_attribute);
     }
 
-    _Class.prototype.pickColorHSV1_CheckColor = function(steps, n, Tr, Ti) {
+    _Class.prototype.pickColorHSV1_CheckColor = function(steps, n, Tr, Ti, Cr, Ci) {
       var c, v;
       this.pixels_checked = this.pixels_checked + 1;
       if (n === steps) {
@@ -56,6 +56,7 @@
       }
       this.pixels_checked = 0;
       this.has_colored_pixel = false;
+      window.isDrawing = false;
       draw(this.dummy_canvas, {
         x: this.fractal_manager.get('top_left').x,
         y: this.fractal_manager.get('bottom_right').x
@@ -152,7 +153,7 @@
         return xhr.setRequestHeader("X-CSRFToken", csrftoken);
       }
     });
-    return route_generator.insertRoutes('http://localhost:8000/api/insert/');
+    return route_generator.insertRoutes('http://localhost:8000/api/insert/mandelbrot/');
   });
 
 }).call(this);

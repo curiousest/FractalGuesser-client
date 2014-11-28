@@ -112,7 +112,7 @@
       }
       next_section = 0;
       return $.ajax({
-        url: window.fractal_api_url + "generate/" + next_level,
+        url: window.fractal_api_url + "generate/mandelbrot/" + next_level,
         type: "GET",
         success: function(data) {
           return success_function(JSON.parse(data));

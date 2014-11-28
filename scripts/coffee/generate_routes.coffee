@@ -20,7 +20,7 @@ window.RouteGenerator = class
     @dummy_canvas.setAttributeNode(canvas_attribute);
     
 
-  pickColorHSV1_CheckColor: (steps, n, Tr, Ti) =>
+  pickColorHSV1_CheckColor: (steps, n, Tr, Ti, Cr, Ci) =>
     @pixels_checked = @pixels_checked + 1
     if ( n == steps )
       return interiorColor
@@ -38,6 +38,9 @@ window.RouteGenerator = class
     
     @pixels_checked = 0
     @has_colored_pixel = false
+    
+    # the waiting for drawings to wait mechanism in the draw function messes this script up
+    window.isDrawing = false
 
     # draw the section and find whether the route is ok
     draw(
@@ -105,12 +108,14 @@ window.RouteGenerator = class
         
 $(document).ready(->
   route_generator = new window.RouteGenerator
+  # build a tree of nodes
   route_generator.checkRoutes(route_generator.routes, 0)
   csrftoken = $.cookie('csrftoken')
   $.ajaxSetup({
     beforeSend: (xhr, settings) ->
       xhr.setRequestHeader("X-CSRFToken", csrftoken)
   })
+  # send the nodes to the server
   route_generator.insertRoutes('http://localhost:8000/api/insert/mandelbrot/')
 )
 
