@@ -2,7 +2,12 @@
 (function() {
   var fractal_game, fractal_game_view, fractal_manager;
 
-  fractal_game = new window.FractalGame(MANDELBROT_CANVAS_SIZE);
+  window.fractal_api_url = "http://localhost:8000/api/";
+
+  fractal_game = new window.FractalGame({
+    width: 400,
+    height: 285
+  }, MANDELBROT_CANVAS_SIZE);
 
   fractal_game_view = new window.FractalGameView({
     model: fractal_game
@@ -36,33 +41,7 @@
         return fractal_game.get('max_zoom').should.be.exactly(4);
       });
     });
-    describe('zoomIn(next_section)', function() {
-      it('should zoom in to current zoom * zoom multiplier', function() {
-        fractal_game.startLevel(2);
-        fractal_game.zoomIn({
-          x: 0,
-          y: 0
-        });
-        fractal_game.get('zoom').should.be.exactly(4);
-        fractal_game.zoomIn({
-          x: 0,
-          y: 0
-        });
-        return fractal_game.get('zoom').should.be.exactly(16);
-      });
-      return it('should update the canvas coordinates for the active fractal`s fractal manager', function() {
-        fractal_game.startGame();
-        fractal_game.zoomIn({
-          x: 1,
-          y: 1
-        });
-        return fractal_game.active_fractal_manager.get('bottom_right').should.eql({
-          x: 1,
-          y: -1.25
-        });
-      });
-    });
-    describe('generateRoute(level: int)', function() {
+    return describe('generateRoute(level: int, success_function: ->, failure_function: ->)', function() {
       it('should reject unreasonable levels', function() {
         var error, route;
         error = 0;
@@ -80,67 +59,24 @@
         }
         return error.should.not.eql(0);
       });
-      it('should return a route at level 1 that isn`t in the bad routes list', function() {
-        var route, section;
-        route = fractal_game.generateRoute(1);
-        section = route.pop();
-        return window.bad_routes[section.x][section.y].should.not.be["false"];
+      it('should return an array at level 1 with a route that has an x/y value, ex: [{x:0,y:0}]', function() {
+        return fractal_game.generateRoute(1, function(route) {
+          route.length.should.eql(1);
+          return (route[0].x === null || route[0].y === null).should.not.be["true"];
+        });
       });
-      it('should return a route at level 2 that isn`t in the bad routes list', function() {
-        var current_bad_route, current_bad_routes, route, section, _results;
-        route = fractal_game.generateRoute(2);
-        current_bad_route = window.bad_routes;
-        _results = [];
-        while (route.length > 0) {
-          section = route.pop();
-          current_bad_routes = current_bad_routes[section.x][section.y];
-          _results.push(current_bad_routes.should.not.be["false"]);
-        }
-        return _results;
-      });
-      return it('should return a route at level 5 that isn`t in the bad routes list', function() {
-        var current_bad_route, current_bad_routes, route, section, _results;
-        route = fractal_game.generateRoute(5);
-        current_bad_route = window.bad_routes;
-        _results = [];
-        while (route.length > 0) {
-          section = route.pop();
-          current_bad_routes = current_bad_routes[section.x][section.y];
-          _results.push(current_bad_routes.should.not.be["false"]);
-        }
-        return _results;
-      });
-    });
-    return describe('newRandomCanvas(level: int)', function() {
-      it('should set the target fractal manager`s top left and bottom right coordinates appropriately distant at level 1', function() {
-        var bottom_right, top_left;
-        fractal_game.newRandomTargetCanvas(1);
-        top_left = fractal_game.target_fractal.target_fractal_manager.get('top_left');
-        bottom_right = fractal_game.target_fractal.target_fractal_manager.get('bottom_right');
-        (bottom_right.x - top_left.x).should.eql(0.875);
-        return (top_left.y - bottom_right.y).should.eql(0.625);
-      });
-      it('should set the target fractal manager`s top left and bottom right coordinates appropriately distant at level 2', function() {
-        var bottom_right, top_left;
-        fractal_game.newRandomTargetCanvas(2);
-        top_left = fractal_game.target_fractal.target_fractal_manager.get('top_left');
-        bottom_right = fractal_game.target_fractal.target_fractal_manager.get('bottom_right');
-        (bottom_right.x - top_left.x).should.eql(0.21875);
-        return (top_left.y - bottom_right.y).should.eql(0.15625);
-      });
-      return it('should set the target fractal manager`s top left and bottom right coordinates appropriately distant at level 6', function() {
-        var bottom_right, top_left;
-        fractal_game.newRandomTargetCanvas(6);
-        top_left = fractal_game.target_fractal.target_fractal_manager.get('top_left');
-        bottom_right = fractal_game.target_fractal.target_fractal_manager.get('bottom_right');
-        (bottom_right.x - top_left.x).should.eql(0.0008544921875);
-        return (top_left.y - bottom_right.y).should.eql(0.0006103515625);
+      return it('should return an array at level 2 with two routes that are each 5 characters long', function() {
+        return fractal_game.generateRoute(2, function(route) {
+          route.length.should.eql(2);
+          (route[0].x === null || route[0].y === null).should.not.be["true"];
+          return (route[1].x === null || route[1].y === null).should.not.be["true"];
+        });
       });
     });
   });
 
   describe('FractalManager', function() {
-    describe('FractalManager(top_left_default: {x: int, y: int}, bottom_right_default: {x: int, y: int})', function() {
+    describe('FractalManager(canvas_size: {width: int, height: int}, top_left_default: {x: int, y: int}, bottom_right_default: {x: int, y: int})', function() {
       it('should set the initial top left and bottom right values', function() {
         fractal_manager.get('top_left').should.eql({
           x: -2.5,
