@@ -116,8 +116,8 @@ window.FractalGameView = class extends Backbone.View
   template: _.template(
     "
     <div class='fractal-header'>
-      <button id='toggle-target-fractal'>Show/Hide Target</button>
-      <button id='next-level-button'>Play Next Level</button>
+      <button id='toggle-target-fractal' class='btn'>Show/Hide Target</button>
+      <button id='next-level-button' class='btn btn-success'>Play Next Level</button>
       <span class='fractal-game-text' id='fractal-game-message'>
         <%= fractal_game_message %>
       </span>

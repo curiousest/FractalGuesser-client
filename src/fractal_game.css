@@ -3,6 +3,13 @@
   background-color: transparent;
 }
 
+.fractal-canvas {
+  left:auto;
+  right:auto;
+  top:auto;
+  bottom:auto;
+}
+
 .zoom {
     position: absolute;
     z-index: 9;
@@ -29,8 +36,11 @@
 }
 
 .fractal-section {
-  border: 1px;
-  border-style: solid;
   z-index: 8;
   position: absolute;
+}
+
+.fractal-section:hover {
+  border: 1px;
+  border-style: solid
 }

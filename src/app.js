@@ -3,8 +3,8 @@
   window.fractal_api_url = "http://localhost:8000/api/";
 
   window.fractalGame = new window.FractalGame({
-    width: 800,
-    height: 1000
+    width: window.innerWidth,
+    height: window.innerHeight
   }, MANDELBROT_CANVAS_SIZE);
 
   window.fractalGameView = new window.FractalGameView({

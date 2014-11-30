@@ -156,7 +156,7 @@
       y: 0
     };
 
-    _Class.prototype.template = _.template("<div class='fractal-header'> <button id='toggle-target-fractal'>Show/Hide Target</button> <button id='next-level-button'>Play Next Level</button> <span class='fractal-game-text' id='fractal-game-message'> <%= fractal_game_message %> </span> </div> <div id='active-canvas' style='position:relative;'> <div class='active-mandelbrot' /> <div class='fractal-sections' /> <span id='active-zoom' class='zoom fractal-game-text'>x<%= zoom %></span> <span id='clicks-remaining' class='fractal-game-text'>Clicks: <%= clicks_remaining %></span> </div>");
+    _Class.prototype.template = _.template("<div class='fractal-header'> <button id='toggle-target-fractal' class='btn'>Show/Hide Target</button> <button id='next-level-button' class='btn btn-success'>Play Next Level</button> <span class='fractal-game-text' id='fractal-game-message'> <%= fractal_game_message %> </span> </div> <div id='active-canvas' style='position:relative;'> <div class='active-mandelbrot' /> <div class='fractal-sections' /> <span id='active-zoom' class='zoom fractal-game-text'>x<%= zoom %></span> <span id='clicks-remaining' class='fractal-game-text'>Clicks: <%= clicks_remaining %></span> </div>");
 
     function _Class(options) {
       if (options == null) {
