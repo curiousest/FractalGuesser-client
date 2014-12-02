@@ -39,6 +39,7 @@
     __extends(_Class, _super);
 
     function _Class() {
+      this.destroy = __bind(this.destroy, this);
       this.render = __bind(this.render, this);
       this.initialize = __bind(this.initialize, this);
       _Class.__super__.constructor.apply(this, arguments);
@@ -49,7 +50,11 @@
 
     _Class.prototype.initialize = function() {
       return this.$el.on('click', (function(_this) {
-        return function() {
+        return function(e) {
+          if (e.timeStamp === _this.last_click_time_stamp) {
+            return;
+          }
+          _this.last_click_time_stamp = e.timeStamp;
           return _this.model.on_click_function(_this.model.section);
         };
       })(this));
@@ -57,6 +62,11 @@
 
     _Class.prototype.render = function() {
       return this.$el;
+    };
+
+    _Class.prototype.destroy = function() {
+      this.remove();
+      return this.$el.off('click', null, this);
     };
 
     return _Class;

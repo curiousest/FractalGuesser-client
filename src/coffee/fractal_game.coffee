@@ -3,8 +3,8 @@ window.FractalGame = class extends Backbone.Model
   SECTION_COLUMN_COUNT: 4
   API_CANVAS_SIZE: {width: 400, height: 285}
   zoom_multiplier: 4
-  target_order: []
-  on_correct_route: true
+  target_route: []
+  travelled_route: []
   clicks_remaining : 1
   
   defaults:
@@ -33,7 +33,9 @@ window.FractalGame = class extends Backbone.Model
     
   startLevel: (this_level) =>
     @may_play_next_level = false
-    @clicks_remaining = this_level
+    @travelled_route = []
+    @level_over = false
+    @clicks_remaining = this_level + 2
     @set 'level', this_level
     @set 'zoom', 1
     @set 'max_zoom', Math.pow(@zoom_multiplier, this_level)
@@ -46,29 +48,57 @@ window.FractalGame = class extends Backbone.Model
         
   startGame: =>
     @startLevel(1)
+    
+  levelFinished: (success) =>
+    if (success)
+      @set('fractal_game_message', "Correct! Level " + @get('level') + " completed...")
+      $('#next-level-button').css('visibility', 'visible')
+      @may_play_next_level = true
+    else
+      @set('fractal_game_message', "Incorrect choice. Sorry, you picked the wrong route. Refresh to play again.")
+      @may_play_next_level = false
+      @level_over = true
   
-  zoomIn: (picked_section) =>   
+  zoomIn: (picked_section) =>
+    @travelled_route.push(picked_section) 
     new_zoom = @get('zoom') * @zoom_multiplier
     @active_fractal_manager.setCanvas(picked_section, new_zoom)
+    
+    # model state change causes the view to render
     @set 'zoom', new_zoom
     
     # if user has already finished the level and is just messing around zooming in
-    if @may_play_next_level or @game_over
+    if @may_play_next_level or @level_over
       return
       
     @clicks_remaining -= 1
-    correct_section = @target_order.shift()
-    if !(correct_section.x == picked_section.x && correct_section.y == picked_section.y)
-      @on_correct_route = false
+    
+    on_correct_route = false
+    
+    # if the user arrived at the target location, change the game state
     if (new_zoom == @get('max_zoom'))
-      if(@on_correct_route)
-        @set('fractal_game_message', "Correct! Level " + @get('level') + " completed...")
-        $('#next-level-button').css('visibility', 'visible')
-        @may_play_next_level = true
-      else
-        @set('fractal_game_message', "Incorrect choice. Sorry, you picked the wrong route. Refresh to play again.")
-        @may_play_next_level = false
-        @game_over = true
+      on_correct_route = true
+      for i in [0..@target_route.length - 1]
+        if (@target_route[i].x != @travelled_route[i].x or @target_route[i].y != @travelled_route[i].y)
+          on_correct_route = false
+      if(on_correct_route)
+        @levelFinished(true)
+    
+    return false
+    
+    # if the user has failed to arrive within the allotted clicks, change the game state
+    if(@clicks_remaining == 0 and !on_correct_route)
+      @levelFinished(false)
+        
+  back: () =>
+    if @get('zoom') == 1 or @clicks_remaining == 0
+      return
+    @active_fractal_manager.previousCanvas()
+    @travelled_route.pop()
+    @set 'zoom', @get('zoom') / @zoom_multiplier
+    @clicks_remaining -= 1
+    if (@clicks_remaining == 0)
+      @levelFinished(false)
       
   nextLevelButtonPressed: () =>
     if @may_play_next_level
@@ -91,7 +121,7 @@ window.FractalGame = class extends Backbone.Model
     @target_fractal.target_fractal_manager.resetCanvas()
     @generateRoute(next_level, 
       (generated_route) =>
-        @target_order = generated_route
+        @target_route = generated_route
         level = 0
         for section in generated_route
           level++
@@ -99,7 +129,8 @@ window.FractalGame = class extends Backbone.Model
             section
             Math.pow(@zoom_multiplier, level)
           )
-        # the target fractal is rendered on this change, not when the fractal game is rendered
+        # the target fractal is rendered on this change, not when the whole fractal game is rendered 
+        # (to avoid unecessary fractal rendering)
         @target_fractal.zoom = Math.pow(@zoom_multiplier, level)
         @target_fractal.trigger('change')
         $('#target-fractal').css('visibility', 'visible')
@@ -117,6 +148,7 @@ window.FractalGameView = class extends Backbone.View
     "
     <div class='fractal-header'>
       <button id='toggle-target-fractal' class='btn'>Show/Hide Target</button>
+      <button id='fractal-back-button' class='btn'>Back</button>
       <button id='next-level-button' class='btn btn-success'>Play Next Level</button>
       <span class='fractal-game-text' id='fractal-game-message'>
         <%= fractal_game_message %>
@@ -183,6 +215,7 @@ window.FractalGameView = class extends Backbone.View
     
     $('#toggle-target-fractal').on('click', @toggleVisibleFractal)
     $('#next-level-button').on('click', @model.nextLevelButtonPressed)
+    $('#fractal-back-button').on('click', @model.back)
 
     @assign(@active_fractal_manager_view, '.active-mandelbrot')
     @assign(@fractal_sections_view, '.fractal-sections')

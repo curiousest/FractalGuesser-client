@@ -18,6 +18,15 @@ describe('FractalGame', ->
       fractal_game.startLevel(1)
       fractal_game.get('max_zoom').should.be.exactly(4)
     )
+    it('should set the clicks left counter to the level + 2', ->
+      fractal_game.startGame()
+      fractal_game.startLevel(1)
+      fractal_game.clicks_remaining.should.be.exactly(3)
+      fractal_game.startLevel(3)
+      fractal_game.clicks_remaining.should.be.exactly(5)
+      fractal_game.startLevel(2)
+      fractal_game.clicks_remaining.should.be.exactly(4)
+    )
   )
   
   describe('startGame()', ->
@@ -59,6 +68,83 @@ describe('FractalGame', ->
           route.length.should.eql(2)
           (route[0].x == null or route[0].y == null).should.not.be.true
           (route[1].x == null or route[1].y == null).should.not.be.true
+      )
+    )
+  )
+  
+  describe('back()', ->
+    it('should zoom the canvas out zoom_multiplier times', ->
+      fractal_game.startGame()
+      fractal_game.startLevel(2)
+      fractal_game.zoomIn({x: 1, y: 1})
+      fractal_game.back()
+      fractal_game.get('zoom').should.be.exactly(1)
+    )
+    it('should not change anything if already at the top-most level', ->
+      fractal_game.startGame()
+      clicks_remaining = fractal_game.clicks_remaining
+      fractal_game.back()
+      fractal_game.get('zoom').should.be.exactly(1)
+      fractal_game.clicks_remaining.should.be.exactly(clicks_remaining)
+    )
+    it('should decrement the clicks remaining counter', ->
+      # local fractal game needed so timeouts don't conflict with other test cases
+      local_fractal_game = new window.FractalGame({width: 400, height: 285}, MANDELBROT_CANVAS_SIZE )
+      local_fractal_game.startGame()
+      local_fractal_game.startLevel(2)
+      # timeouts are to allow the server to respond to route generation requests on fractal_game.startLevel() calls
+      setTimeout( 
+        =>
+          local_fractal_game.zoomIn({x: 1, y: 1})
+          clicks_remaining = fractal_game.clicks_remaining
+          local_fractal_game.back()
+          local_fractal_game.clicks_remaining.should.be.exactly(clicks_remaining - 1)
+        100
+      )
+    )
+    it('should not change anything if there are no clicks remaining', ->
+      local_fractal_game = new window.FractalGame({width: 400, height: 285}, MANDELBROT_CANVAS_SIZE )
+      local_fractal_game.startGame()
+      setTimeout( 
+        =>
+          while(local_fractal_game.clicks_remaining > 0)
+            local_fractal_game.zoomIn({x: 1, y: 1})
+          setTimeout( 
+            =>
+              zoom = local_fractal_game.get('zoom')
+              local_fractal_game.back()
+              local_fractal_game.clicks_remaining.should.be.exactly(0)
+              local_fractal_game.get('zoom').should.be.exactly(zoom)
+            100
+          )
+        200
+      )
+    )
+    it('shouldn`t prevent the user from reaching the correct route', ->
+      local_fractal_game = new window.FractalGame({width: 400, height: 285}, MANDELBROT_CANVAS_SIZE )
+      local_fractal_game.startGame()
+      setTimeout(
+        =>
+          local_fractal_game.zoomIn({x: 0, y: 0})
+          local_fractal_game.back()
+          local_fractal_game.zoomIn(local_fractal_game.target_route[0])
+          local_fractal_game.may_play_next_level.should.be.true
+        200
+      )
+    )
+    it('should end the level if the clicks remaining counter decrements to zero', ->
+      local_fractal_game = new window.FractalGame({width: 400, height: 285}, MANDELBROT_CANVAS_SIZE )
+      local_fractal_game.startGame()
+      local_fractal_game.startLevel(2)
+      setTimeout( 
+        =>
+          local_fractal_game.zoomIn({x: 1, y: 1})
+          local_fractal_game.zoomIn({x: 1, y: 1})
+          local_fractal_game.zoomIn({x: 1, y: 1})
+          local_fractal_game.back()
+          local_fractal_game.level_over.should.be.true
+          local_fractal_game.may_play_next_level.should.be.false
+        200
       )
     )
   )

@@ -18,9 +18,9 @@
 
     _Class.prototype.zoom_multiplier = 4;
 
-    _Class.prototype.target_order = [];
+    _Class.prototype.target_route = [];
 
-    _Class.prototype.on_correct_route = true;
+    _Class.prototype.travelled_route = [];
 
     _Class.prototype.clicks_remaining = 1;
 
@@ -35,7 +35,9 @@
       this.newRandomTargetCanvas = __bind(this.newRandomTargetCanvas, this);
       this.generateRoute = __bind(this.generateRoute, this);
       this.nextLevelButtonPressed = __bind(this.nextLevelButtonPressed, this);
+      this.back = __bind(this.back, this);
       this.zoomIn = __bind(this.zoomIn, this);
+      this.levelFinished = __bind(this.levelFinished, this);
       this.startGame = __bind(this.startGame, this);
       this.startLevel = __bind(this.startLevel, this);
       var target_fractal_manager;
@@ -56,7 +58,9 @@
 
     _Class.prototype.startLevel = function(this_level) {
       this.may_play_next_level = false;
-      this.clicks_remaining = this_level;
+      this.travelled_route = [];
+      this.level_over = false;
+      this.clicks_remaining = this_level + 2;
       this.set('level', this_level);
       this.set('zoom', 1);
       this.set('max_zoom', Math.pow(this.zoom_multiplier, this_level));
@@ -72,29 +76,56 @@
       return this.startLevel(1);
     };
 
+    _Class.prototype.levelFinished = function(success) {
+      if (success) {
+        this.set('fractal_game_message', "Correct! Level " + this.get('level') + " completed...");
+        $('#next-level-button').css('visibility', 'visible');
+        return this.may_play_next_level = true;
+      } else {
+        this.set('fractal_game_message', "Incorrect choice. Sorry, you picked the wrong route. Refresh to play again.");
+        this.may_play_next_level = false;
+        return this.level_over = true;
+      }
+    };
+
     _Class.prototype.zoomIn = function(picked_section) {
-      var correct_section, new_zoom;
+      var i, new_zoom, on_correct_route, _i, _ref;
+      this.travelled_route.push(picked_section);
       new_zoom = this.get('zoom') * this.zoom_multiplier;
       this.active_fractal_manager.setCanvas(picked_section, new_zoom);
       this.set('zoom', new_zoom);
-      if (this.may_play_next_level || this.game_over) {
+      if (this.may_play_next_level || this.level_over) {
         return;
       }
       this.clicks_remaining -= 1;
-      correct_section = this.target_order.shift();
-      if (!(correct_section.x === picked_section.x && correct_section.y === picked_section.y)) {
-        this.on_correct_route = false;
-      }
+      on_correct_route = false;
       if (new_zoom === this.get('max_zoom')) {
-        if (this.on_correct_route) {
-          this.set('fractal_game_message', "Correct! Level " + this.get('level') + " completed...");
-          $('#next-level-button').css('visibility', 'visible');
-          return this.may_play_next_level = true;
-        } else {
-          this.set('fractal_game_message', "Incorrect choice. Sorry, you picked the wrong route. Refresh to play again.");
-          this.may_play_next_level = false;
-          return this.game_over = true;
+        on_correct_route = true;
+        for (i = _i = 0, _ref = this.target_route.length - 1; 0 <= _ref ? _i <= _ref : _i >= _ref; i = 0 <= _ref ? ++_i : --_i) {
+          if (this.target_route[i].x !== this.travelled_route[i].x || this.target_route[i].y !== this.travelled_route[i].y) {
+            on_correct_route = false;
+          }
         }
+        if (on_correct_route) {
+          this.levelFinished(true);
+        }
+      }
+      return false;
+      if (this.clicks_remaining === 0 && !on_correct_route) {
+        return this.levelFinished(false);
+      }
+    };
+
+    _Class.prototype.back = function() {
+      if (this.get('zoom') === 1 || this.clicks_remaining === 0) {
+        return;
+      }
+      this.active_fractal_manager.previousCanvas();
+      this.travelled_route.pop();
+      this.set('zoom', this.get('zoom') / this.zoom_multiplier);
+      this.clicks_remaining -= 1;
+      if (this.clicks_remaining === 0) {
+        return this.levelFinished(false);
       }
     };
 
@@ -126,7 +157,7 @@
       return this.generateRoute(next_level, (function(_this) {
         return function(generated_route) {
           var level, section, _i, _len;
-          _this.target_order = generated_route;
+          _this.target_route = generated_route;
           level = 0;
           for (_i = 0, _len = generated_route.length; _i < _len; _i++) {
             section = generated_route[_i];
@@ -156,7 +187,7 @@
       y: 0
     };
 
-    _Class.prototype.template = _.template("<div class='fractal-header'> <button id='toggle-target-fractal' class='btn'>Show/Hide Target</button> <button id='next-level-button' class='btn btn-success'>Play Next Level</button> <span class='fractal-game-text' id='fractal-game-message'> <%= fractal_game_message %> </span> </div> <div id='active-canvas' style='position:relative;'> <div class='active-mandelbrot' /> <div class='fractal-sections' /> <span id='active-zoom' class='zoom fractal-game-text'>x<%= zoom %></span> <span id='clicks-remaining' class='fractal-game-text'>Clicks: <%= clicks_remaining %></span> </div>");
+    _Class.prototype.template = _.template("<div class='fractal-header'> <button id='toggle-target-fractal' class='btn'>Show/Hide Target</button> <button id='fractal-back-button' class='btn'>Back</button> <button id='next-level-button' class='btn btn-success'>Play Next Level</button> <span class='fractal-game-text' id='fractal-game-message'> <%= fractal_game_message %> </span> </div> <div id='active-canvas' style='position:relative;'> <div class='active-mandelbrot' /> <div class='fractal-sections' /> <span id='active-zoom' class='zoom fractal-game-text'>x<%= zoom %></span> <span id='clicks-remaining' class='fractal-game-text'>Clicks: <%= clicks_remaining %></span> </div>");
 
     function _Class(options) {
       if (options == null) {
@@ -216,6 +247,7 @@
       }));
       $('#toggle-target-fractal').on('click', this.toggleVisibleFractal);
       $('#next-level-button').on('click', this.model.nextLevelButtonPressed);
+      $('#fractal-back-button').on('click', this.model.back);
       this.assign(this.active_fractal_manager_view, '.active-mandelbrot');
       return this.assign(this.fractal_sections_view, '.fractal-sections');
     };

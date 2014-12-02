@@ -27,9 +27,20 @@ window.FractalSectionView = class extends Backbone.View
     @$el.html('&nbsp')
 
   initialize: =>
-    @$el.on('click', =>@model.on_click_function(@model.section))
+    @$el.on('click',
+      (e) =>
+        # eliminate multiple events stemming from one click
+        if (e.timeStamp == @last_click_time_stamp)
+          return
+        @last_click_time_stamp = e.timeStamp
+        @model.on_click_function(@model.section)
+    )
 
   render: => return @$el
+  
+  destroy: =>
+    @remove()
+    @$el.off('click', null, this);
   
 
 window.FractalSections = class extends Backbone.Collection

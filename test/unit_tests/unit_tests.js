@@ -25,9 +25,18 @@
         fractal_game.startLevel(2);
         return fractal_game.get('level').should.be.exactly(2);
       });
-      return it('should set the maximum zoom for this game`s level', function() {
+      it('should set the maximum zoom for this game`s level', function() {
         fractal_game.startLevel(1);
         return fractal_game.get('max_zoom').should.be.exactly(4);
+      });
+      return it('should set the clicks left counter to the level + 2', function() {
+        fractal_game.startGame();
+        fractal_game.startLevel(1);
+        fractal_game.clicks_remaining.should.be.exactly(3);
+        fractal_game.startLevel(3);
+        fractal_game.clicks_remaining.should.be.exactly(5);
+        fractal_game.startLevel(2);
+        return fractal_game.clicks_remaining.should.be.exactly(4);
       });
     });
     describe('startGame()', function() {
@@ -41,7 +50,7 @@
         return fractal_game.get('max_zoom').should.be.exactly(4);
       });
     });
-    return describe('generateRoute(level: int, success_function: ->, failure_function: ->)', function() {
+    describe('generateRoute(level: int, success_function: ->, failure_function: ->)', function() {
       it('should reject unreasonable levels', function() {
         var error, route;
         error = 0;
@@ -71,6 +80,119 @@
           (route[0].x === null || route[0].y === null).should.not.be["true"];
           return (route[1].x === null || route[1].y === null).should.not.be["true"];
         });
+      });
+    });
+    return describe('back()', function() {
+      it('should zoom the canvas out zoom_multiplier times', function() {
+        fractal_game.startGame();
+        fractal_game.startLevel(2);
+        fractal_game.zoomIn({
+          x: 1,
+          y: 1
+        });
+        fractal_game.back();
+        return fractal_game.get('zoom').should.be.exactly(1);
+      });
+      it('should not change anything if already at the top-most level', function() {
+        var clicks_remaining;
+        fractal_game.startGame();
+        clicks_remaining = fractal_game.clicks_remaining;
+        fractal_game.back();
+        fractal_game.get('zoom').should.be.exactly(1);
+        return fractal_game.clicks_remaining.should.be.exactly(clicks_remaining);
+      });
+      it('should decrement the clicks remaining counter', function() {
+        var local_fractal_game;
+        local_fractal_game = new window.FractalGame({
+          width: 400,
+          height: 285
+        }, MANDELBROT_CANVAS_SIZE);
+        local_fractal_game.startGame();
+        local_fractal_game.startLevel(2);
+        return setTimeout((function(_this) {
+          return function() {
+            var clicks_remaining;
+            local_fractal_game.zoomIn({
+              x: 1,
+              y: 1
+            });
+            clicks_remaining = fractal_game.clicks_remaining;
+            local_fractal_game.back();
+            return local_fractal_game.clicks_remaining.should.be.exactly(clicks_remaining - 1);
+          };
+        })(this), 100);
+      });
+      it('should not change anything if there are no clicks remaining', function() {
+        var local_fractal_game;
+        local_fractal_game = new window.FractalGame({
+          width: 400,
+          height: 285
+        }, MANDELBROT_CANVAS_SIZE);
+        local_fractal_game.startGame();
+        return setTimeout((function(_this) {
+          return function() {
+            while (local_fractal_game.clicks_remaining > 0) {
+              local_fractal_game.zoomIn({
+                x: 1,
+                y: 1
+              });
+            }
+            return setTimeout(function() {
+              var zoom;
+              zoom = local_fractal_game.get('zoom');
+              local_fractal_game.back();
+              local_fractal_game.clicks_remaining.should.be.exactly(0);
+              return local_fractal_game.get('zoom').should.be.exactly(zoom);
+            }, 100);
+          };
+        })(this), 200);
+      });
+      it('shouldn`t prevent the user from reaching the correct route', function() {
+        var local_fractal_game;
+        local_fractal_game = new window.FractalGame({
+          width: 400,
+          height: 285
+        }, MANDELBROT_CANVAS_SIZE);
+        local_fractal_game.startGame();
+        return setTimeout((function(_this) {
+          return function() {
+            local_fractal_game.zoomIn({
+              x: 0,
+              y: 0
+            });
+            local_fractal_game.back();
+            local_fractal_game.zoomIn(local_fractal_game.target_route[0]);
+            return local_fractal_game.may_play_next_level.should.be["true"];
+          };
+        })(this), 200);
+      });
+      return it('should end the level if the clicks remaining counter decrements to zero', function() {
+        var local_fractal_game;
+        local_fractal_game = new window.FractalGame({
+          width: 400,
+          height: 285
+        }, MANDELBROT_CANVAS_SIZE);
+        local_fractal_game.startGame();
+        local_fractal_game.startLevel(2);
+        return setTimeout((function(_this) {
+          return function() {
+            local_fractal_game.zoomIn({
+              x: 1,
+              y: 1
+            });
+            local_fractal_game.zoomIn({
+              x: 1,
+              y: 1
+            });
+            local_fractal_game.zoomIn({
+              x: 1,
+              y: 1
+            });
+            local_fractal_game.back();
+            local_fractal_game.level_over.should.be["true"];
+            return local_fractal_game.may_play_next_level.should.be["false"];
+          };
+        })(this), 200);
       });
     });
   });
