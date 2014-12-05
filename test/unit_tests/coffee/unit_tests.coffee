@@ -25,16 +25,137 @@ describe('FractalGame', ->
   )
   
   describe('startGame()', ->
-    it('should set the game`s round to 1', ->
-      fractal_game.startGame()
-      fractal_game.get('round').should.be.exactly(1)
-    )
-    it('should start at round 1', ->
+    it('should start at round 1 with 0 points', ->
       fractal_game.startGame()
       fractal_game.get('zoom').should.be.exactly(1)
+      fractal_game.get('points').should.be.exactly(0)
     )
-    it('should enable 3 rounds to be played', ->
-    
+    it('should allow three rounds to be played when rounds succeed', ->
+      local_fractal_game = new window.FractalGame({width: 400, height: 285}, MANDELBROT_CANVAS_SIZE )
+      local_fractal_game.startGame()
+      setTimeout( 
+        =>
+          for route in local_fractal_game.target_route
+            local_fractal_game.zoomIn(route)
+          local_fractal_game.may_play_next_round.should.be.true
+          
+          local_fractal_game.nextRoundButtonPressed()
+          setTimeout( 
+            =>
+              for route in local_fractal_game.target_route
+                local_fractal_game.zoomIn(route)
+              local_fractal_game.may_play_next_round.should.be.true
+            200
+          )
+        200
+      )
+    )
+    it('should allow three rounds to be played when rounds fail', ->
+      local_fractal_game = new window.FractalGame({width: 400, height: 285}, MANDELBROT_CANVAS_SIZE )
+      local_fractal_game.startGame()
+      setTimeout( 
+        =>
+          for route in local_fractal_game.target_route
+            local_fractal_game.zoomIn(route)
+          local_fractal_game.may_play_next_round.should.be.true
+          
+          local_fractal_game.nextRoundButtonPressed()
+          setTimeout( 
+            =>
+              for route in local_fractal_game.target_route
+                local_fractal_game.zoomIn(route)
+              local_fractal_game.may_play_next_round.should.be.true
+            200
+          )
+        200
+      )
+    )
+    it('should end the game after three rounds are played', ->
+      local_fractal_game = new window.FractalGame({width: 400, height: 285}, MANDELBROT_CANVAS_SIZE )
+      local_fractal_game.startGame()
+      setTimeout( 
+        =>
+          for i in [1..6]
+            local_fractal_game.zoomIn({x: 1, y: 1})
+          local_fractal_game.nextRoundButtonPressed()
+          setTimeout( 
+            =>
+              for i in [1..6]
+                local_fractal_game.zoomIn({x: 1, y: 1})
+                
+              local_fractal_game.nextRoundButtonPressed()
+              setTimeout( 
+                =>
+                  for route in local_fractal_game.target_route
+                    local_fractal_game.zoomIn(route)
+                  local_fractal_game.may_play_next_round.should.be.false
+                200
+              )
+            200
+          )
+        200
+      )
+    )
+    it('should give a perfect score (300) after three successful rounds', ->
+      local_fractal_game = new window.FractalGame({width: 400, height: 285}, MANDELBROT_CANVAS_SIZE )
+      local_fractal_game.startGame()
+      setTimeout( 
+        =>
+          for route in local_fractal_game.target_route
+            local_fractal_game.zoomIn(route)
+          
+          local_fractal_game.nextRoundButtonPressed()
+          setTimeout( 
+            =>
+              for route in local_fractal_game.target_route
+                local_fractal_game.zoomIn(route)
+              local_fractal_game.nextRoundButtonPressed()
+              setTimeout( 
+                =>
+                  for route in local_fractal_game.target_route
+                    local_fractal_game.zoomIn(route)
+                  local_fractal_game.get('points').should.eql(300)
+                200
+              )
+            200
+          )
+        200
+      )
+    )
+    it('should give a score relative to the center coordinate distances between target and active fractal after each round', ->
+      local_fractal_game = new window.FractalGame({width: 400, height: 285}, MANDELBROT_CANVAS_SIZE )
+      local_fractal_game.startGame()
+      score = 0
+      setTimeout(
+        =>
+          for i in [1..6]
+            local_fractal_game.zoomIn({x: 1, y: 1})
+          active_c = local_fractal_game.active_fractal_manager.centerCoordinate()
+          target_c = local_fractal_game.target_fractal.target_fractal_manager.centerCoordinate()
+          score = score + 100 - (2*(MANDELBROT_CANVAS_DIAGONAL - Math.sqrt(Math.pow(active_c.x - target_c.x, 2) + Math.pow(active_c.y - target_c.y, 2))/MANDELBROT_CANVAS_DIAGONAL))
+          local_fractal_game.nextRoundButtonPressed()
+          setTimeout( 
+            =>
+              for i in [1..6]
+                local_fractal_game.zoomIn({x: 1, y: 1})
+              active_c = local_fractal_game.active_fractal_manager.centerCoordinate()
+              target_c = local_fractal_game.target_fractal.target_fractal_manager.centerCoordinate()
+              score = score + 100 - (2*(MANDELBROT_CANVAS_DIAGONAL - Math.sqrt(Math.pow(active_c.x - target_c.x, 2) + Math.pow(active_c.y - target_c.y, 2))/MANDELBROT_CANVAS_DIAGONAL))
+              local_fractal_game.nextRoundButtonPressed()
+              setTimeout( 
+                =>
+                  for i in [1..6]
+                    local_fractal_game.zoomIn({x: 1, y: 1})
+                  active_c = local_fractal_game.active_fractal_manager.centerCoordinate()
+                  target_c = local_fractal_game.target_fractal.target_fractal_manager.centerCoordinate()
+                  score = score + 100 - (2*(MANDELBROT_CANVAS_DIAGONAL - Math.sqrt(Math.pow(active_c.x - target_c.x, 2) + Math.pow(active_c.y - target_c.y, 2))/MANDELBROT_CANVAS_DIAGONAL))
+                  local_fractal_game.get('points').should.eql(300)
+                200
+              )
+            200
+          )
+        200
+      )
     )
   )
   
@@ -116,72 +237,6 @@ describe('FractalGame', ->
         200
       )
     )
-    it('should allow three rounds to be played when rounds succeed', ->
-      local_fractal_game = new window.FractalGame({width: 400, height: 285}, MANDELBROT_CANVAS_SIZE )
-      local_fractal_game.startGame()
-      setTimeout( 
-        =>
-          for route in local_fractal_game.target_route
-            local_fractal_game.zoomIn(route)
-          local_fractal_game.may_play_next_round.should.be.true
-          
-          local_fractal_game.nextRoundButtonPressed()
-          setTimeout( 
-            =>
-              for route in local_fractal_game.target_route
-                local_fractal_game.zoomIn(route)
-              local_fractal_game.may_play_next_round.should.be.true
-            200
-          )
-        200
-      )
-    )
-    it('should allow three rounds to be played when rounds fail', ->
-      local_fractal_game = new window.FractalGame({width: 400, height: 285}, MANDELBROT_CANVAS_SIZE )
-      local_fractal_game.startGame()
-      setTimeout( 
-        =>
-          for route in local_fractal_game.target_route
-            local_fractal_game.zoomIn(route)
-          local_fractal_game.may_play_next_round.should.be.true
-          
-          local_fractal_game.nextRoundButtonPressed()
-          setTimeout( 
-            =>
-              for route in local_fractal_game.target_route
-                local_fractal_game.zoomIn(route)
-              local_fractal_game.may_play_next_round.should.be.true
-            200
-          )
-        200
-      )
-    )
-    it('should end the game after three rounds are played', ->
-      local_fractal_game = new window.FractalGame({width: 400, height: 285}, MANDELBROT_CANVAS_SIZE )
-      local_fractal_game.startGame()
-      setTimeout( 
-        =>
-          for i in [1..6]
-            local_fractal_game.zoomIn({x: 1, y: 1})
-          local_fractal_game.nextRoundButtonPressed()
-          setTimeout( 
-            =>
-              for i in [1..6]
-                local_fractal_game.zoomIn({x: 1, y: 1})
-                
-              local_fractal_game.nextRoundButtonPressed()
-              setTimeout( 
-                =>
-                  for route in local_fractal_game.target_route
-                    local_fractal_game.zoomIn(route)
-                  local_fractal_game.may_play_next_round.should.be.false
-                200
-              )
-            200
-          )
-        200
-      )
-    )
   )
   
 )
@@ -243,6 +298,21 @@ describe('FractalManager', ->
       fractal_manager.previousCanvas()
       fractal_manager.get('top_left').should.eql(fractal_manager.get('default_top_left'))
       fractal_manager.get('bottom_right').should.eql(fractal_manager.get('default_bottom_right'))
+    )
+  )
+  describe('centerCoordinate()', ->
+    it('should return {-0.75, 0} at the base Mandelbrot canvas size', ->
+      fractal_manager.resetCanvas()
+      c = fractal_manager.centerCoordinate()
+      c.x.should.eql(-0.75)
+      c.y.should.eql(0)
+    )
+    it('should return {-0.75, 0} at the base Mandelbrot canvas size', ->
+      fractal_manager.resetCanvas()
+      fractal_manager.setCanvas({x: 0, y: 0}, 4)
+      c = fractal_manager.centerCoordinate()
+      c.x.should.eql(-2.0625)
+      c.y.should.eql(-0.9375)
     )
   )
 )
