@@ -42,6 +42,11 @@ window.FractalManager = class extends Backbone.Model
       y: old_top_left.y - offset_from_old_top_left.y - @get('entire_height')/new_zoom
     }
     
+  getCenterCoordinate: =>
+    top_left = @get('top_left')
+    bottom_right = @get('bottom_right')
+    return {x: top_left.x + Math.abs(top_left.x - bottom_right.x) / 2, y: top_left.y - Math.abs(top_left.y - bottom_right.y) / 2}
+    
   previousCanvas: =>
     previous_canvas = @history.pop()
     if previous_canvas?

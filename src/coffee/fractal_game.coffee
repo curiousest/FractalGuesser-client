@@ -9,11 +9,13 @@ window.FractalGame = class extends Backbone.Model
   
   defaults:
     zoom: 1
+    score: 0
     round: 0
     fractal_game_message: "Click to zoom in. Try to zoom in to the exact location of the fractal on the left."
     
-  constructor: (pixel_canvas_size, cartesian_canvas_size) ->
+  constructor: (pixel_canvas_size, cartesian_canvas_size, cartesian_diagonal) ->
     Backbone.Model.apply(@)
+    @cartesian_diagonal = cartesian_diagonal
     
     # make the largest possible canvas at the proper aspect ratio that will fit in the canvas' pixel size
     if (pixel_canvas_size.width / pixel_canvas_size.height > @API_CANVAS_SIZE.width / @API_CANVAS_SIZE.height)
@@ -51,21 +53,29 @@ window.FractalGame = class extends Backbone.Model
     @newRandomTargetCanvas(this_round)
         
   startGame: =>
+    @set 'round', 0
+    @set 'score', 0
     @startRound(1)
     
   roundFinished: (success) =>
     @round_over = true
 
     if (success)
-      @set('fractal_game_message', "Correct! round " + @get('round') + " completed...")     
+      @set 'score', @get('score') + 100
+      @set('fractal_game_message', "Perfect! Round " + @get('round') + ": 100 / 100. Continue to next round.")
     else
-      @set('fractal_game_message', "Incorrect choice. Sorry, you picked the wrong route.")
+      active_c = @active_fractal_manager.getCenterCoordinate()
+      target_c = @target_fractal.target_fractal_manager.getCenterCoordinate()
+      distance = Math.sqrt(Math.pow(active_c.x - target_c.x, 2) + Math.pow(active_c.y - target_c.y, 2))
+      round_score = 100 - 100 * Math.abs((@cartesian_diagonal - (9*distance))/@cartesian_diagonal)
+      @set('fractal_game_message', "Round over. Round " + @get('round') + ": " + round_score + " / 100")
+      @set 'score', @get('score') + round_score
       
     if (@get('round') != 3)
       @may_play_next_round = true
       $('#next-round-button').css('visibility', 'visible')
     else
-      @set('fractal_game_message', @get('fractal_game_message') + " Game finished. Refresh to play again.") 
+      @set('fractal_game_message', @get('fractal_game_message') + " Game finished. Refresh to play again. Total score : " + @get('score') + "/300") 
   
   zoomIn: (picked_section) =>
     @travelled_route.push(picked_section) 
@@ -91,8 +101,6 @@ window.FractalGame = class extends Backbone.Model
           on_correct_route = false
       if(on_correct_route)
         @roundFinished(true)
-    
-    return false
     
     # if the user has failed to arrive within the allotted clicks, change the game state
     if(@clicks_remaining == 0 and !on_correct_route)

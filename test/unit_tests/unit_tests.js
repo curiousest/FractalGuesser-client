@@ -7,7 +7,7 @@
   fractal_game = new window.FractalGame({
     width: 400,
     height: 285
-  }, MANDELBROT_CANVAS_SIZE);
+  }, MANDELBROT_CANVAS_SIZE, MANDELBROT_CANVAS_DIAGONAL);
 
   fractal_game_view = new window.FractalGameView({
     model: fractal_game
@@ -35,17 +35,17 @@
       });
     });
     describe('startGame()', function() {
-      it('should start at round 1 with 0 points', function() {
+      it('should start at round 1 with 0 score', function() {
         fractal_game.startGame();
         fractal_game.get('zoom').should.be.exactly(1);
-        return fractal_game.get('points').should.be.exactly(0);
+        return fractal_game.get('score').should.be.exactly(0);
       });
       it('should allow three rounds to be played when rounds succeed', function() {
         var local_fractal_game;
         local_fractal_game = new window.FractalGame({
           width: 400,
           height: 285
-        }, MANDELBROT_CANVAS_SIZE);
+        }, MANDELBROT_CANVAS_SIZE, MANDELBROT_CANVAS_DIAGONAL);
         local_fractal_game.startGame();
         return setTimeout((function(_this) {
           return function() {
@@ -74,7 +74,7 @@
         local_fractal_game = new window.FractalGame({
           width: 400,
           height: 285
-        }, MANDELBROT_CANVAS_SIZE);
+        }, MANDELBROT_CANVAS_SIZE, MANDELBROT_CANVAS_DIAGONAL);
         local_fractal_game.startGame();
         return setTimeout((function(_this) {
           return function() {
@@ -103,7 +103,7 @@
         local_fractal_game = new window.FractalGame({
           width: 400,
           height: 285
-        }, MANDELBROT_CANVAS_SIZE);
+        }, MANDELBROT_CANVAS_SIZE, MANDELBROT_CANVAS_DIAGONAL);
         local_fractal_game.startGame();
         return setTimeout((function(_this) {
           return function() {
@@ -142,7 +142,7 @@
         local_fractal_game = new window.FractalGame({
           width: 400,
           height: 285
-        }, MANDELBROT_CANVAS_SIZE);
+        }, MANDELBROT_CANVAS_SIZE, MANDELBROT_CANVAS_DIAGONAL);
         local_fractal_game.startGame();
         return setTimeout((function(_this) {
           return function() {
@@ -168,32 +168,28 @@
                   route = _ref2[_k];
                   local_fractal_game.zoomIn(route);
                 }
-                return local_fractal_game.get('points').should.eql(300);
+                return local_fractal_game.get('score').should.eql(300);
               }, 200);
             }, 200);
           };
         })(this), 200);
       });
       return it('should give a score relative to the center coordinate distances between target and active fractal after each round', function() {
-        var local_fractal_game, score;
+        var local_fractal_game;
         local_fractal_game = new window.FractalGame({
           width: 400,
           height: 285
-        }, MANDELBROT_CANVAS_SIZE);
+        }, MANDELBROT_CANVAS_SIZE, MANDELBROT_CANVAS_DIAGONAL);
         local_fractal_game.startGame();
-        score = 0;
         return setTimeout((function(_this) {
           return function() {
-            var active_c, i, target_c, _i;
+            var i, _i;
             for (i = _i = 1; _i <= 6; i = ++_i) {
               local_fractal_game.zoomIn({
                 x: 1,
                 y: 1
               });
             }
-            active_c = local_fractal_game.active_fractal_manager.centerCoordinate();
-            target_c = local_fractal_game.target_fractal.target_fractal_manager.centerCoordinate();
-            score = score + 100 - (2 * (MANDELBROT_CANVAS_DIAGONAL - Math.sqrt(Math.pow(active_c.x - target_c.x, 2) + Math.pow(active_c.y - target_c.y, 2)) / MANDELBROT_CANVAS_DIAGONAL));
             local_fractal_game.nextRoundButtonPressed();
             return setTimeout(function() {
               var _j;
@@ -203,22 +199,18 @@
                   y: 1
                 });
               }
-              active_c = local_fractal_game.active_fractal_manager.centerCoordinate();
-              target_c = local_fractal_game.target_fractal.target_fractal_manager.centerCoordinate();
-              score = score + 100 - (2 * (MANDELBROT_CANVAS_DIAGONAL - Math.sqrt(Math.pow(active_c.x - target_c.x, 2) + Math.pow(active_c.y - target_c.y, 2)) / MANDELBROT_CANVAS_DIAGONAL));
               local_fractal_game.nextRoundButtonPressed();
               return setTimeout(function() {
-                var _k;
+                var score, _k;
                 for (i = _k = 1; _k <= 6; i = ++_k) {
                   local_fractal_game.zoomIn({
                     x: 1,
                     y: 1
                   });
                 }
-                active_c = local_fractal_game.active_fractal_manager.centerCoordinate();
-                target_c = local_fractal_game.target_fractal.target_fractal_manager.centerCoordinate();
-                score = score + 100 - (2 * (MANDELBROT_CANVAS_DIAGONAL - Math.sqrt(Math.pow(active_c.x - target_c.x, 2) + Math.pow(active_c.y - target_c.y, 2)) / MANDELBROT_CANVAS_DIAGONAL));
-                return local_fractal_game.get('points').should.eql(300);
+                score = local_fractal_game.get('score');
+                score.should.be.greaterThan(-300);
+                return score.should.be.lessThan(300);
               }, 200);
             }, 200);
           };
@@ -257,7 +249,7 @@
         local_fractal_game = new window.FractalGame({
           width: 400,
           height: 285
-        }, MANDELBROT_CANVAS_SIZE);
+        }, MANDELBROT_CANVAS_SIZE, MANDELBROT_CANVAS_DIAGONAL);
         local_fractal_game.startGame();
         return setTimeout((function(_this) {
           return function() {
@@ -277,7 +269,7 @@
         local_fractal_game = new window.FractalGame({
           width: 400,
           height: 285
-        }, MANDELBROT_CANVAS_SIZE);
+        }, MANDELBROT_CANVAS_SIZE, MANDELBROT_CANVAS_DIAGONAL);
         local_fractal_game.startGame();
         return setTimeout((function(_this) {
           return function() {
@@ -300,7 +292,7 @@
         local_fractal_game = new window.FractalGame({
           width: 400,
           height: 285
-        }, MANDELBROT_CANVAS_SIZE);
+        }, MANDELBROT_CANVAS_SIZE, MANDELBROT_CANVAS_DIAGONAL);
         local_fractal_game.startGame();
         return setTimeout((function(_this) {
           return function() {
@@ -324,7 +316,7 @@
         local_fractal_game = new window.FractalGame({
           width: 400,
           height: 285
-        }, MANDELBROT_CANVAS_SIZE);
+        }, MANDELBROT_CANVAS_SIZE, MANDELBROT_CANVAS_DIAGONAL);
         local_fractal_game.startGame();
         return setTimeout((function(_this) {
           return function() {
@@ -449,11 +441,11 @@
         return fractal_manager.get('bottom_right').should.eql(fractal_manager.get('default_bottom_right'));
       });
     });
-    return describe('centerCoordinate()', function() {
+    return describe('getCenterCoordinate()', function() {
       it('should return {-0.75, 0} at the base Mandelbrot canvas size', function() {
         var c;
         fractal_manager.resetCanvas();
-        c = fractal_manager.centerCoordinate();
+        c = fractal_manager.getCenterCoordinate();
         c.x.should.eql(-0.75);
         return c.y.should.eql(0);
       });
@@ -464,9 +456,9 @@
           x: 0,
           y: 0
         }, 4);
-        c = fractal_manager.centerCoordinate();
+        c = fractal_manager.getCenterCoordinate();
         c.x.should.eql(-2.0625);
-        return c.y.should.eql(-0.9375);
+        return c.y.should.eql(0.9375);
       });
     });
   });

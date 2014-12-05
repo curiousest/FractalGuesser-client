@@ -40,6 +40,7 @@
 
     function _Class(canvas_size, pixel_width, pixel_height) {
       this.previousCanvas = __bind(this.previousCanvas, this);
+      this.getCenterCoordinate = __bind(this.getCenterCoordinate, this);
       Backbone.Model.apply(this);
       this.set('default_top_left', canvas_size.top_left);
       this.set('default_bottom_right', canvas_size.bottom_right);
@@ -70,6 +71,16 @@
         x: old_top_left.x + offset_from_old_top_left.x + this.get('entire_width') / new_zoom,
         y: old_top_left.y - offset_from_old_top_left.y - this.get('entire_height') / new_zoom
       });
+    };
+
+    _Class.prototype.getCenterCoordinate = function() {
+      var bottom_right, top_left;
+      top_left = this.get('top_left');
+      bottom_right = this.get('bottom_right');
+      return {
+        x: top_left.x + Math.abs(top_left.x - bottom_right.x) / 2,
+        y: top_left.y - Math.abs(top_left.y - bottom_right.y) / 2
+      };
     };
 
     _Class.prototype.previousCanvas = function() {

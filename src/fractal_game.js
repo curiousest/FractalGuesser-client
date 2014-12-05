@@ -26,11 +26,12 @@
 
     _Class.prototype.defaults = {
       zoom: 1,
+      score: 0,
       round: 0,
       fractal_game_message: "Click to zoom in. Try to zoom in to the exact location of the fractal on the left."
     };
 
-    function _Class(pixel_canvas_size, cartesian_canvas_size) {
+    function _Class(pixel_canvas_size, cartesian_canvas_size, cartesian_diagonal) {
       this.newRandomTargetCanvas = __bind(this.newRandomTargetCanvas, this);
       this.generateRoute = __bind(this.generateRoute, this);
       this.nextRoundButtonPressed = __bind(this.nextRoundButtonPressed, this);
@@ -41,6 +42,7 @@
       this.startRound = __bind(this.startRound, this);
       var target_fractal_manager;
       Backbone.Model.apply(this);
+      this.cartesian_diagonal = cartesian_diagonal;
       if (pixel_canvas_size.width / pixel_canvas_size.height > this.API_CANVAS_SIZE.width / this.API_CANVAS_SIZE.height) {
         this.active_canvas_pixel_height = pixel_canvas_size.height;
         this.active_canvas_pixel_width = Math.floor(pixel_canvas_size.height * (this.API_CANVAS_SIZE.width / this.API_CANVAS_SIZE.height));
@@ -74,21 +76,30 @@
     };
 
     _Class.prototype.startGame = function() {
+      this.set('round', 0);
+      this.set('score', 0);
       return this.startRound(1);
     };
 
     _Class.prototype.roundFinished = function(success) {
+      var active_c, distance, round_score, target_c;
       this.round_over = true;
       if (success) {
-        this.set('fractal_game_message', "Correct! round " + this.get('round') + " completed...");
+        this.set('score', this.get('score') + 100);
+        this.set('fractal_game_message', "Perfect! Round " + this.get('round') + ": 100 / 100. Continue to next round.");
       } else {
-        this.set('fractal_game_message', "Incorrect choice. Sorry, you picked the wrong route.");
+        active_c = this.active_fractal_manager.getCenterCoordinate();
+        target_c = this.target_fractal.target_fractal_manager.getCenterCoordinate();
+        distance = Math.sqrt(Math.pow(active_c.x - target_c.x, 2) + Math.pow(active_c.y - target_c.y, 2));
+        round_score = 100 - 100 * Math.abs((this.cartesian_diagonal - (9 * distance)) / this.cartesian_diagonal);
+        this.set('fractal_game_message', "Round over. Round " + this.get('round') + ": " + round_score + " / 100");
+        this.set('score', this.get('score') + round_score);
       }
       if (this.get('round') !== 3) {
         this.may_play_next_round = true;
         return $('#next-round-button').css('visibility', 'visible');
       } else {
-        return this.set('fractal_game_message', this.get('fractal_game_message') + " Game finished. Refresh to play again.");
+        return this.set('fractal_game_message', this.get('fractal_game_message') + " Game finished. Refresh to play again. Total score : " + this.get('score') + "/300");
       }
     };
 
@@ -114,7 +125,6 @@
           this.roundFinished(true);
         }
       }
-      return false;
       if (this.clicks_remaining === 0 && !on_correct_route) {
         return this.roundFinished(false);
       }
