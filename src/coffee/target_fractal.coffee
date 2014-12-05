@@ -9,7 +9,6 @@ window.TargetFractalView = class extends Backbone.View
   template: _.template("
     <div id='target-canvas'>
         <div class='target-mandelbrot' />
-        <span id='target-zoom' class='zoom fractal-game-text'>x<%= zoom %></span>
     </div>")
 
   constructor: (options={}) ->
@@ -31,7 +30,5 @@ window.TargetFractalView = class extends Backbone.View
   
   # this view is only needed to link the canvas to this element without having to get rendered repeatedly
   render: =>
-    @$el.html(@template({
-      'zoom':@model.zoom}
-    ))
+    @$el.html(@template({}))
     @assign(@fractal_manager_view, '.target-mandelbrot')

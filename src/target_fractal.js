@@ -20,7 +20,7 @@
   window.TargetFractalView = (function(_super) {
     __extends(_Class, _super);
 
-    _Class.prototype.template = _.template("<div id='target-canvas'> <div class='target-mandelbrot' /> <span id='target-zoom' class='zoom fractal-game-text'>x<%= zoom %></span> </div>");
+    _Class.prototype.template = _.template("<div id='target-canvas'> <div class='target-mandelbrot' /> </div>");
 
     function _Class(options) {
       if (options == null) {
@@ -45,9 +45,7 @@
     };
 
     _Class.prototype.render = function() {
-      this.$el.html(this.template({
-        'zoom': this.model.zoom
-      }));
+      this.$el.html(this.template({}));
       return this.assign(this.fractal_manager_view, '.target-mandelbrot');
     };
 
