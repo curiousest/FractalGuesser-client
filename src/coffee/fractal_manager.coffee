@@ -8,10 +8,12 @@ window.FractalManager = class extends Backbone.Model
     entire_height: 0
     pixel_width: 0
     pixel_height: 0
+    visible: true
   canvas: 0
   color_picker: pickColorHSV1Gradient
   fractal_algorithm: mandelbrotAlgorithm
   history: []
+  
     
   constructor: (canvas_size, pixel_width, pixel_height, fractal_algorithm, color_picker) ->
   
@@ -25,6 +27,7 @@ window.FractalManager = class extends Backbone.Model
     @set 'entire_height', canvas_size.top_left.y - canvas_size.bottom_right.y
     @set 'pixel_width', pixel_width
     @set 'pixel_height', pixel_height
+    @set 'visible', true
     @fractal_algorithm = fractal_algorithm
     @color_picker = color_picker
     
@@ -61,7 +64,7 @@ window.FractalManager = class extends Backbone.Model
     @history = []
     
 window.FractalManagerView = class extends Backbone.View
-  template: _.template("<canvas style='position:absolute;' width='<%= pixel_width %>' height='<%= pixel_height %>'> </canvas>")
+  template: _.template("<canvas style='position:absolute; visibility: <%= visibility %>;' width='<%= pixel_width %>' height='<%= pixel_height %>'> </canvas>")
 
   constructor: (@model) -> 
     Backbone.View.apply(@)
@@ -70,6 +73,7 @@ window.FractalManagerView = class extends Backbone.View
     @$el.html(@template({
       'pixel_width': @model.get('pixel_width')
       'pixel_height': @model.get('pixel_height')
+      'visibility': @model.get('visible')? 'visible' : 'hidden'
     }))
     draw(
       @$el.find('canvas')[0]
@@ -85,3 +89,5 @@ window.FractalManagerView = class extends Backbone.View
       @model.fractal_algorithm
     )
     return @$el
+      
+   

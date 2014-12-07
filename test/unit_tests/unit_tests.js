@@ -60,7 +60,7 @@
               local_fractal_game.zoomIn(route);
             }
             local_fractal_game.may_play_next_round.should.be["true"];
-            local_fractal_game.nextRoundButtonPressed();
+            local_fractal_game.playNextRound();
             return setTimeout(function() {
               var _j, _len1, _ref1;
               _ref1 = local_fractal_game.target_route;
@@ -89,7 +89,7 @@
               local_fractal_game.zoomIn(route);
             }
             local_fractal_game.may_play_next_round.should.be["true"];
-            local_fractal_game.nextRoundButtonPressed();
+            local_fractal_game.playNextRound();
             return setTimeout(function() {
               var _j, _len1, _ref1;
               _ref1 = local_fractal_game.target_route;
@@ -118,7 +118,7 @@
                 y: 1
               });
             }
-            local_fractal_game.nextRoundButtonPressed();
+            local_fractal_game.playNextRound();
             return setTimeout(function() {
               var _j;
               for (i = _j = 1; _j <= 6; i = ++_j) {
@@ -127,7 +127,7 @@
                   y: 1
                 });
               }
-              local_fractal_game.nextRoundButtonPressed();
+              local_fractal_game.playNextRound();
               return setTimeout(function() {
                 var route, _k, _len, _ref;
                 _ref = local_fractal_game.target_route;
@@ -156,7 +156,7 @@
               route = _ref[_i];
               local_fractal_game.zoomIn(route);
             }
-            local_fractal_game.nextRoundButtonPressed();
+            local_fractal_game.playNextRound();
             return setTimeout(function() {
               var _j, _len1, _ref1;
               _ref1 = local_fractal_game.target_route;
@@ -164,7 +164,7 @@
                 route = _ref1[_j];
                 local_fractal_game.zoomIn(route);
               }
-              local_fractal_game.nextRoundButtonPressed();
+              local_fractal_game.playNextRound();
               return setTimeout(function() {
                 var _k, _len2, _ref2;
                 _ref2 = local_fractal_game.target_route;
@@ -194,7 +194,7 @@
                 y: 1
               });
             }
-            local_fractal_game.nextRoundButtonPressed();
+            local_fractal_game.playNextRound();
             return setTimeout(function() {
               var _j;
               for (i = _j = 1; _j <= 6; i = ++_j) {
@@ -203,7 +203,7 @@
                   y: 1
                 });
               }
-              local_fractal_game.nextRoundButtonPressed();
+              local_fractal_game.playNextRound();
               return setTimeout(function() {
                 var score, _k;
                 for (i = _k = 1; _k <= 6; i = ++_k) {
@@ -213,7 +213,7 @@
                   });
                 }
                 score = local_fractal_game.get('score');
-                score.should.be.greaterThan(-300);
+                score.should.be.greaterThan(-600);
                 return score.should.be.lessThan(300);
               }, 200);
             }, 200);
@@ -237,7 +237,7 @@
               local_fractal_game.zoomIn(route);
             }
             local_fractal_game.may_play_next_round.should.be["true"];
-            local_fractal_game.nextRoundButtonPressed();
+            local_fractal_game.playNextRound();
             return setTimeout(function() {
               return initial_clicks.should.be.lessThan(local_fractal_game.clicks_remaining);
             }, 200);
@@ -487,36 +487,6 @@
         c = fractal_manager.getCenterCoordinate();
         c.x.should.eql(-2.0625);
         return c.y.should.eql(0.9375);
-      });
-    });
-  });
-
-  describe('FractalManagerView', function() {
-    return describe('toggleHidden()', function() {
-      it('should hide the canvas if it is visible', function() {
-        var visibility;
-        visibility = fractal_manager_view.el.getAttribute('style')['visibility'];
-        visibility.should.eql("visible");
-        fractal_manager_view.toggleHidden();
-        visibility = fractal_manager_view.el.getAttribute('style')['visibility'];
-        return visibility.should.eql("hidden");
-      });
-      it('should show the canvas if it is hidden', function() {
-        var visibility;
-        visibility = fractal_manager_view.el.getAttribute('style')['visibility'];
-        visibility.should.eql("hidden");
-        fractal_manager_view.toggleHidden();
-        visibility = fractal_manager_view.el.getAttribute('style')['visibility'];
-        return visibility.should.eql("visible");
-      });
-      return it('should maintain the state of visibility after rerendering', function() {
-        var visibility;
-        fractal_manager_view.toggleHidden();
-        visibility = fractal_manager_view.el.getAttribute('style')['visibility'];
-        visibility.should.eql("hidden");
-        fractal_manager_view.render();
-        visibility = fractal_manager_view.el.getAttribute('style')['visibility'];
-        return visibility.should.eql("hidden");
       });
     });
   });

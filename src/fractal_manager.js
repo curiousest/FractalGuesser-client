@@ -27,7 +27,8 @@
       entire_width: 0,
       entire_height: 0,
       pixel_width: 0,
-      pixel_height: 0
+      pixel_height: 0,
+      visible: true
     };
 
     _Class.prototype.canvas = 0;
@@ -50,6 +51,7 @@
       this.set('entire_height', canvas_size.top_left.y - canvas_size.bottom_right.y);
       this.set('pixel_width', pixel_width);
       this.set('pixel_height', pixel_height);
+      this.set('visible', true);
       this.fractal_algorithm = fractal_algorithm;
       this.color_picker = color_picker;
     }
@@ -107,7 +109,7 @@
   window.FractalManagerView = (function(_super) {
     __extends(_Class, _super);
 
-    _Class.prototype.template = _.template("<canvas style='position:absolute;' width='<%= pixel_width %>' height='<%= pixel_height %>'> </canvas>");
+    _Class.prototype.template = _.template("<canvas style='position:absolute; visibility: <%= visibility %>;' width='<%= pixel_width %>' height='<%= pixel_height %>'> </canvas>");
 
     function _Class(model) {
       this.model = model;
@@ -116,9 +118,13 @@
     }
 
     _Class.prototype.render = function() {
+      var _base;
       this.$el.html(this.template({
         'pixel_width': this.model.get('pixel_width'),
-        'pixel_height': this.model.get('pixel_height')
+        'pixel_height': this.model.get('pixel_height'),
+        'visibility': typeof (_base = this.model.get('visible')) === "function" ? _base({
+          'visible': 'hidden'
+        }) : void 0
       }));
       draw(this.$el.find('canvas')[0], {
         x: this.model.get('top_left').x,

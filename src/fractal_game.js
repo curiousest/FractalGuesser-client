@@ -37,6 +37,7 @@
     };
 
     function _Class(pixel_canvas_size, cartesian_canvas_size, cartesian_diagonal, fractalAlgorithm, colorPicker) {
+      this.toggleVisibleFractal = __bind(this.toggleVisibleFractal, this);
       this.newRandomTargetCanvas = __bind(this.newRandomTargetCanvas, this);
       this.generateRoute = __bind(this.generateRoute, this);
       this.playNextRound = __bind(this.playNextRound, this);
@@ -72,14 +73,14 @@
       this.set('round', this_round);
       this.set('zoom', 1);
       this.clicks_remaining = 6 + this.bonus_clicks;
+      this.active_fractal_manager.visible = false;
+      this.target_fractal_manager.visible = true;
       this.active_fractal_manager.resetCanvas();
       if (this_round === 1) {
         this.set('fractal_game_message', "Instructions: switch between your target and current location.<br/>Click on your current canvas and try to zoom into the target.");
       } else {
         this.set('fractal_game_message', "Round " + this.get('round') + " in progress.");
       }
-      $('#target-canvas').css('visibility', 'visible');
-      $('#active-canvas').css('visibility', 'hidden');
       $('#next-round-button').css('visibility', 'hidden');
       return this.newRandomTargetCanvas(this_round);
     };
@@ -195,6 +196,11 @@
       })(this), function(failure_message) {
         return alert("Failed to reach fractal-generating server with error: " + failure_message);
       });
+    };
+
+    _Class.prototype.toggleVisibleFractal = function() {
+      active_fractal_manager.toggleVisible();
+      return target_fractal_manager.toggleVisible();
     };
 
     return _Class;

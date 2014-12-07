@@ -40,7 +40,7 @@ describe('FractalGame', ->
             local_fractal_game.zoomIn(route)
           local_fractal_game.may_play_next_round.should.be.true
           
-          local_fractal_game.nextRoundButtonPressed()
+          local_fractal_game.playNextRound()
           setTimeout( 
             =>
               for route in local_fractal_game.target_route
@@ -60,7 +60,7 @@ describe('FractalGame', ->
             local_fractal_game.zoomIn(route)
           local_fractal_game.may_play_next_round.should.be.true
           
-          local_fractal_game.nextRoundButtonPressed()
+          local_fractal_game.playNextRound()
           setTimeout( 
             =>
               for route in local_fractal_game.target_route
@@ -78,13 +78,13 @@ describe('FractalGame', ->
         =>
           for i in [1..6]
             local_fractal_game.zoomIn({x: 1, y: 1})
-          local_fractal_game.nextRoundButtonPressed()
+          local_fractal_game.playNextRound()
           setTimeout( 
             =>
               for i in [1..6]
                 local_fractal_game.zoomIn({x: 1, y: 1})
                 
-              local_fractal_game.nextRoundButtonPressed()
+              local_fractal_game.playNextRound()
               setTimeout( 
                 =>
                   for route in local_fractal_game.target_route
@@ -105,12 +105,12 @@ describe('FractalGame', ->
           for route in local_fractal_game.target_route
             local_fractal_game.zoomIn(route)
           
-          local_fractal_game.nextRoundButtonPressed()
+          local_fractal_game.playNextRound()
           setTimeout( 
             =>
               for route in local_fractal_game.target_route
                 local_fractal_game.zoomIn(route)
-              local_fractal_game.nextRoundButtonPressed()
+              local_fractal_game.playNextRound()
               setTimeout( 
                 =>
                   for route in local_fractal_game.target_route
@@ -130,18 +130,18 @@ describe('FractalGame', ->
         =>
           for i in [1..6]
             local_fractal_game.zoomIn({x: 1, y: 1})
-          local_fractal_game.nextRoundButtonPressed()
+          local_fractal_game.playNextRound()
           setTimeout( 
             =>
               for i in [1..6]
                 local_fractal_game.zoomIn({x: 1, y: 1})
-              local_fractal_game.nextRoundButtonPressed()
+              local_fractal_game.playNextRound()
               setTimeout( 
                 =>
                   for i in [1..6]
                     local_fractal_game.zoomIn({x: 1, y: 1})
                   score = local_fractal_game.get('score')
-                  score.should.be.greaterThan(-300)
+                  score.should.be.greaterThan(-600)
                   score.should.be.lessThan(300)
                 200
               )
@@ -160,7 +160,7 @@ describe('FractalGame', ->
             local_fractal_game.zoomIn(route)
           local_fractal_game.may_play_next_round.should.be.true
           
-          local_fractal_game.nextRoundButtonPressed()
+          local_fractal_game.playNextRound()
           setTimeout( 
             =>
               initial_clicks.should.be.lessThan(local_fractal_game.clicks_remaining)
@@ -325,33 +325,6 @@ describe('FractalManager', ->
       c = fractal_manager.getCenterCoordinate()
       c.x.should.eql(-2.0625)
       c.y.should.eql(0.9375)
-    )
-  )
-)
-
-describe('FractalManagerView', ->  
-  describe('toggleHidden()', ->
-    it('should hide the canvas if it is visible', ->
-      visibility = fractal_manager_view.el.getAttribute('style')['visibility']
-      visibility.should.eql("visible")
-      fractal_manager_view.toggleHidden()
-      visibility = fractal_manager_view.el.getAttribute('style')['visibility']
-      visibility.should.eql("hidden")
-    )
-    it('should show the canvas if it is hidden', ->
-      visibility = fractal_manager_view.el.getAttribute('style')['visibility']
-      visibility.should.eql("hidden")
-      fractal_manager_view.toggleHidden()
-      visibility = fractal_manager_view.el.getAttribute('style')['visibility']
-      visibility.should.eql("visible")
-    )
-    it('should maintain the state of visibility after rerendering', ->
-      fractal_manager_view.toggleHidden()
-      visibility = fractal_manager_view.el.getAttribute('style')['visibility']
-      visibility.should.eql("hidden")
-      fractal_manager_view.render()
-      visibility = fractal_manager_view.el.getAttribute('style')['visibility']
-      visibility.should.eql("hidden")
     )
   )
 )

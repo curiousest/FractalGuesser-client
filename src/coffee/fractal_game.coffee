@@ -50,13 +50,14 @@ window.FractalGame = class extends Backbone.Model
     @set 'zoom', 1
     @clicks_remaining = 6 + @bonus_clicks
     
+    @active_fractal_manager.visible = false
+    @target_fractal_manager.visible = true
     @active_fractal_manager.resetCanvas()
     if this_round == 1
       @set('fractal_game_message', "Instructions: switch between your target and current location.<br/>Click on your current canvas and try to zoom into the target.")
     else
       @set('fractal_game_message', "Round " + @get('round') + " in progress.")
-    $('#target-canvas').css('visibility', 'visible')
-    $('#active-canvas').css('visibility', 'hidden')
+    
     $('#next-round-button').css('visibility', 'hidden')
     
     @newRandomTargetCanvas(this_round)
@@ -162,7 +163,11 @@ window.FractalGame = class extends Backbone.Model
         
       (failure_message) ->
         alert("Failed to reach fractal-generating server with error: " + failure_message)
-    )  
+    )
+    
+  toggleVisibleFractal: () =>
+    active_fractal_manager.toggleVisible()
+    target_fractal_manager.toggleVisible()
 
 window.FractalGameView = class extends Backbone.View
   
@@ -221,7 +226,8 @@ window.FractalGameView = class extends Backbone.View
   assign: (view, selector) -> 
     view.setElement($(selector))
     view.render()
-    
+  
+  # ugly, but necessary to avoid re-rendering fractals when trying to perform this simple toggle
   toggleVisibleFractal: () ->
     target_fractal = $('#target-canvas')
     active_fractal = $('#active-canvas')
