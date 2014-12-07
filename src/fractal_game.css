@@ -1,3 +1,7 @@
+body {
+  background-color: black;
+}
+
 .fractal-game-text {
   color: white;
   background-color: transparent;
@@ -10,8 +14,21 @@
   bottom:auto;
 }
 
+.fractal-menu {
+  z-index: 9;
+  position: absolute;
+  padding: 2px;
+}
+
+.fractal-info {
+  z-index: 7;
+  position: absolute;
+  padding: 2px;
+  top: 35px;
+}
+
 .zoom {
-    z-index: 7;
+  z-index: 7;
 }
 #clicks-remaining {
   z-index: 7;
@@ -19,7 +36,6 @@
 
 .fractal-header {
   position: absolute;
-  z-index: 9;
   padding: 5px;
 }
 

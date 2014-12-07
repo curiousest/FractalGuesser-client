@@ -45,7 +45,10 @@ window.FractalGame = class extends Backbone.Model
     @clicks_remaining = 6 + @bonus_clicks
     
     @active_fractal_manager.resetCanvas()
-    @set('fractal_game_message', "round " + @get('round') + " in progress...")
+    if this_round == 1
+      @set('fractal_game_message', "Instructions: switch between your target and current location.<br/>Click on your current canvas and try to zoom into the target.")
+    else
+      @set('fractal_game_message', "Round " + @get('round') + " in progress.")
     $('#target-canvas').css('visibility', 'visible')
     $('#active-canvas').css('visibility', 'hidden')
     $('#next-round-button').css('visibility', 'hidden')
@@ -163,11 +166,12 @@ window.FractalGameView = class extends Backbone.View
   
   template: _.template(
     "
-    <div class='fractal-header'>
-      <button id='toggle-target-fractal' class='btn'>Show/Hide Target</button>
-      <button id='fractal-back-button' class='btn'>Back</button>
-      <button id='next-round-button' class='btn btn-success'>Play Next round</button>
-      <br/>
+    <div class='fractal-menu'>
+      <button id='toggle-target-fractal' class='btn fractal-game-btn'>Show/Hide Target</button>
+      <button id='fractal-back-button' class='btn fractal-game-btn'>Back</button>
+      <button id='next-round-button' class='btn btn-success fractal-game-btn'>Play Next round</button>
+    </div>
+    <div class='fractal-info'>
       <span id='clicks-remaining' class='fractal-game-text'>Clicks left: <%= clicks_remaining %></span>
       <br/>
       <span id='active-zoom' class='zoom fractal-game-text'>Zoom: x<%= zoom %></span>    
