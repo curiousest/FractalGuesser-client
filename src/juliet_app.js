@@ -5,7 +5,7 @@
   window.fractalGame = new window.FractalGame({
     width: window.innerWidth,
     height: window.innerHeight
-  }, MANDELBROT_CANVAS_SIZE, MANDELBROT_CANVAS_DIAGONAL, mandelbrotAlgorithm, pickColorHSV1Gradient);
+  }, JULIET_CANVAS_SIZE, JULIET_CANVAS_DIAGONAL, julietAlgorithm, pickColorHSV1);
 
   window.fractalGameView = new window.FractalGameView({
     model: fractalGame

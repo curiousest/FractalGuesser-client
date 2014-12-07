@@ -38,7 +38,7 @@
 
     _Class.prototype.history = [];
 
-    function _Class(canvas_size, pixel_width, pixel_height) {
+    function _Class(canvas_size, pixel_width, pixel_height, fractal_algorithm, color_picker) {
       this.previousCanvas = __bind(this.previousCanvas, this);
       this.getCenterCoordinate = __bind(this.getCenterCoordinate, this);
       Backbone.Model.apply(this);
@@ -50,6 +50,8 @@
       this.set('entire_height', canvas_size.top_left.y - canvas_size.bottom_right.y);
       this.set('pixel_width', pixel_width);
       this.set('pixel_height', pixel_height);
+      this.fractal_algorithm = fractal_algorithm;
+      this.color_picker = color_picker;
     }
 
     _Class.prototype.setCanvas = function(target_section, new_zoom) {

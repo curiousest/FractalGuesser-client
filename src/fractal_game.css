@@ -11,19 +11,10 @@
 }
 
 .zoom {
-    position: absolute;
-    z-index: 9;
-    left: 950px;
-    padding: 5px;
-    border: 2px;
-    border-style: solid;
-    border-color: white;
+    z-index: 7;
 }
 #clicks-remaining {
-  position: absolute;
-  z-index: 9;
-  top: 5px;
-  left: 880px;
+  z-index: 7;
 }
 
 .fractal-header {
@@ -33,6 +24,7 @@
 }
 
 #fractal-game-message {
+  z-index: 7;
 }
 
 .fractal-section {

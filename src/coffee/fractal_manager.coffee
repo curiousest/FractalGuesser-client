@@ -13,7 +13,7 @@ window.FractalManager = class extends Backbone.Model
   fractal_algorithm: mandelbrotAlgorithm
   history: []
     
-  constructor: (canvas_size, pixel_width, pixel_height) ->
+  constructor: (canvas_size, pixel_width, pixel_height, fractal_algorithm, color_picker) ->
   
     Backbone.Model.apply(@)
   
@@ -25,6 +25,8 @@ window.FractalManager = class extends Backbone.Model
     @set 'entire_height', canvas_size.top_left.y - canvas_size.bottom_right.y
     @set 'pixel_width', pixel_width
     @set 'pixel_height', pixel_height
+    @fractal_algorithm = fractal_algorithm
+    @color_picker = color_picker
     
   setCanvas: (target_section, new_zoom) ->
     @history.push({top_left: @get('top_left'), bottom_right: @get('bottom_right')})

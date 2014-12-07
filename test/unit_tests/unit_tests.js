@@ -137,7 +137,7 @@
           };
         })(this), 200);
       });
-      it('should give a perfect score (300) after three successful rounds', function() {
+      it('should give a perfect score > (310) after three successful rounds', function() {
         var local_fractal_game;
         local_fractal_game = new window.FractalGame({
           width: 400,
@@ -168,13 +168,13 @@
                   route = _ref2[_k];
                   local_fractal_game.zoomIn(route);
                 }
-                return local_fractal_game.get('score').should.eql(300);
+                return local_fractal_game.get('score').should.be.greaterThan(310);
               }, 200);
             }, 200);
           };
         })(this), 200);
       });
-      return it('should give a score relative to the center coordinate distances between target and active fractal after each round', function() {
+      it('should give a score relative to the center coordinate distances between target and active fractal after each round', function() {
         var local_fractal_game;
         local_fractal_game = new window.FractalGame({
           width: 400,
@@ -212,6 +212,30 @@
                 score.should.be.greaterThan(-300);
                 return score.should.be.lessThan(300);
               }, 200);
+            }, 200);
+          };
+        })(this), 200);
+      });
+      return it('should carry over extra clicks from previous rounds', function() {
+        var local_fractal_game;
+        local_fractal_game = new window.FractalGame({
+          width: 400,
+          height: 285
+        }, MANDELBROT_CANVAS_SIZE, MANDELBROT_CANVAS_DIAGONAL);
+        local_fractal_game.startGame();
+        return setTimeout((function(_this) {
+          return function() {
+            var initial_clicks, route, _i, _len, _ref;
+            initial_clicks = local_fractal_game.clicks_remaining;
+            _ref = local_fractal_game.target_route;
+            for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+              route = _ref[_i];
+              local_fractal_game.zoomIn(route);
+            }
+            local_fractal_game.may_play_next_round.should.be["true"];
+            local_fractal_game.nextRoundButtonPressed();
+            return setTimeout(function() {
+              return initial_clicks.should.be.lessThan(local_fractal_game.clicks_remaining);
             }, 200);
           };
         })(this), 200);
