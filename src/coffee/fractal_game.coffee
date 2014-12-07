@@ -1,11 +1,17 @@
 window.FractalGame = class extends Backbone.Model
-  SECTION_ROW_COUNT: 4
-  SECTION_COLUMN_COUNT: 4
-  API_CANVAS_SIZE: {width: 400, height: 285}
-  zoom_multiplier: 4
+  API_CANVAS_RATIO: 400/285
+  ZOOM_MULTIPLIER: 4
+  
   target_route: []
   travelled_route: []
-  clicks_remaining : 6
+  clicks_remaining: 6
+  bonus_clicks: 0
+  may_play_next_round: false
+  round_over: false
+  
+  target_fractal: 0
+  target_fractal_manager: 0
+  active_fractal_manager: 0
   
   defaults:
     zoom: 1
@@ -18,12 +24,12 @@ window.FractalGame = class extends Backbone.Model
     @cartesian_diagonal = cartesian_diagonal
     
     # make the largest possible canvas at the proper aspect ratio that will fit in the canvas' pixel size
-    if (pixel_canvas_size.width / pixel_canvas_size.height > @API_CANVAS_SIZE.width / @API_CANVAS_SIZE.height)
+    if (pixel_canvas_size.width / pixel_canvas_size.height > @API_CANVAS_RATIO)
       @active_canvas_pixel_height = pixel_canvas_size.height
-      @active_canvas_pixel_width = Math.floor(pixel_canvas_size.height * (@API_CANVAS_SIZE.width / @API_CANVAS_SIZE.height))
+      @active_canvas_pixel_width = Math.floor(pixel_canvas_size.height * @API_CANVAS_RATIO)
     else
       @active_canvas_pixel_width = pixel_canvas_size.width
-      @active_canvas_pixel_height = Math.floor(pixel_canvas_size.width * (@API_CANVAS_SIZE.height / @API_CANVAS_SIZE.width))
+      @active_canvas_pixel_height = Math.floor(pixel_canvas_size.width / @API_CANVAS_RATIO)
     
     @target_canvas_pixel_width = @active_canvas_pixel_width
     @target_canvas_pixel_height = @active_canvas_pixel_height
@@ -84,7 +90,7 @@ window.FractalGame = class extends Backbone.Model
   
   zoomIn: (picked_section) =>
     @travelled_route.push(picked_section) 
-    new_zoom = @get('zoom') * @zoom_multiplier
+    new_zoom = @get('zoom') * @ZOOM_MULTIPLIER
     @active_fractal_manager.setCanvas(picked_section, new_zoom)
     
     # model state change causes the view to render
@@ -95,7 +101,6 @@ window.FractalGame = class extends Backbone.Model
       return
       
     @clicks_remaining -= 1
-    
     on_correct_route = false
     
     # if the user arrived at the target location, change the game state
@@ -116,12 +121,12 @@ window.FractalGame = class extends Backbone.Model
       return
     @active_fractal_manager.previousCanvas()
     @travelled_route.pop()
-    @set 'zoom', @get('zoom') / @zoom_multiplier
+    @set 'zoom', @get('zoom') / @ZOOM_MULTIPLIER
     @clicks_remaining -= 1
     if (@clicks_remaining == 0)
       @roundFinished(false)
       
-  nextRoundButtonPressed: () =>
+  playNextRound: () =>
     if @may_play_next_round
       @startRound(@get('round') + 1)
     else if @round_over
@@ -147,11 +152,11 @@ window.FractalGame = class extends Backbone.Model
           round++
           @target_fractal.target_fractal_manager.setCanvas(
             section
-            Math.pow(@zoom_multiplier, round)
+            Math.pow(@ZOOM_MULTIPLIER, round)
           )
         # the target fractal is rendered on this change, not when the whole fractal game is rendered 
         # (to avoid unecessary fractal rendering)
-        @target_fractal.zoom = Math.pow(@zoom_multiplier, generated_route['level'])
+        @target_fractal.zoom = Math.pow(@ZOOM_MULTIPLIER, generated_route['level'])
         @target_fractal.trigger('change')
         $('#target-fractal').css('visibility', 'visible')
         
@@ -237,7 +242,7 @@ window.FractalGameView = class extends Backbone.View
     }))
     
     $('#toggle-target-fractal').on('click', @toggleVisibleFractal)
-    $('#next-round-button').on('click', @model.nextRoundButtonPressed)
+    $('#next-round-button').on('click', @model.playNextRound)
     $('#fractal-back-button').on('click', @model.back)
 
     @assign(@active_fractal_manager_view, '.fractal-canvas-holder')

@@ -2,6 +2,7 @@ window.fractal_api_url = "http://localhost:8000/api/"
 fractal_game = new window.FractalGame({width: 400, height: 285}, MANDELBROT_CANVAS_SIZE, MANDELBROT_CANVAS_DIAGONAL)
 fractal_game_view = new window.FractalGameView({model:fractal_game})
 fractal_manager = new window.FractalManager(MANDELBROT_CANVAS_SIZE, 400, 285)
+fractal_manager_view = new window.FractalManagerView({model:fractal_manager})
 
 describe('FractalGame', ->
 
@@ -318,12 +319,39 @@ describe('FractalManager', ->
       c.x.should.eql(-0.75)
       c.y.should.eql(0)
     )
-    it('should return {-0.75, 0} at the base Mandelbrot canvas size', ->
+    it('should return {-2.0625, 0.9375} after zooming into section {x:0,y:0} on Mandelbrot canvas size', ->
       fractal_manager.resetCanvas()
       fractal_manager.setCanvas({x: 0, y: 0}, 4)
       c = fractal_manager.getCenterCoordinate()
       c.x.should.eql(-2.0625)
       c.y.should.eql(0.9375)
+    )
+  )
+)
+
+describe('FractalManagerView', ->  
+  describe('toggleHidden()', ->
+    it('should hide the canvas if it is visible', ->
+      visibility = fractal_manager_view.el.getAttribute('style')['visibility']
+      visibility.should.eql("visible")
+      fractal_manager_view.toggleHidden()
+      visibility = fractal_manager_view.el.getAttribute('style')['visibility']
+      visibility.should.eql("hidden")
+    )
+    it('should show the canvas if it is hidden', ->
+      visibility = fractal_manager_view.el.getAttribute('style')['visibility']
+      visibility.should.eql("hidden")
+      fractal_manager_view.toggleHidden()
+      visibility = fractal_manager_view.el.getAttribute('style')['visibility']
+      visibility.should.eql("visible")
+    )
+    it('should maintain the state of visibility after rerendering', ->
+      fractal_manager_view.toggleHidden()
+      visibility = fractal_manager_view.el.getAttribute('style')['visibility']
+      visibility.should.eql("hidden")
+      fractal_manager_view.render()
+      visibility = fractal_manager_view.el.getAttribute('style')['visibility']
+      visibility.should.eql("hidden")
     )
   )
 )

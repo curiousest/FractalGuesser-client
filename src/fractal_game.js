@@ -7,22 +7,27 @@
   window.FractalGame = (function(_super) {
     __extends(_Class, _super);
 
-    _Class.prototype.SECTION_ROW_COUNT = 4;
+    _Class.prototype.API_CANVAS_RATIO = 400 / 285;
 
-    _Class.prototype.SECTION_COLUMN_COUNT = 4;
-
-    _Class.prototype.API_CANVAS_SIZE = {
-      width: 400,
-      height: 285
-    };
-
-    _Class.prototype.zoom_multiplier = 4;
+    _Class.prototype.ZOOM_MULTIPLIER = 4;
 
     _Class.prototype.target_route = [];
 
     _Class.prototype.travelled_route = [];
 
     _Class.prototype.clicks_remaining = 6;
+
+    _Class.prototype.bonus_clicks = 0;
+
+    _Class.prototype.may_play_next_round = false;
+
+    _Class.prototype.round_over = false;
+
+    _Class.prototype.target_fractal = 0;
+
+    _Class.prototype.target_fractal_manager = 0;
+
+    _Class.prototype.active_fractal_manager = 0;
 
     _Class.prototype.defaults = {
       zoom: 1,
@@ -34,7 +39,7 @@
     function _Class(pixel_canvas_size, cartesian_canvas_size, cartesian_diagonal, fractalAlgorithm, colorPicker) {
       this.newRandomTargetCanvas = __bind(this.newRandomTargetCanvas, this);
       this.generateRoute = __bind(this.generateRoute, this);
-      this.nextRoundButtonPressed = __bind(this.nextRoundButtonPressed, this);
+      this.playNextRound = __bind(this.playNextRound, this);
       this.back = __bind(this.back, this);
       this.zoomIn = __bind(this.zoomIn, this);
       this.roundFinished = __bind(this.roundFinished, this);
@@ -43,12 +48,12 @@
       var target_fractal_manager;
       Backbone.Model.apply(this);
       this.cartesian_diagonal = cartesian_diagonal;
-      if (pixel_canvas_size.width / pixel_canvas_size.height > this.API_CANVAS_SIZE.width / this.API_CANVAS_SIZE.height) {
+      if (pixel_canvas_size.width / pixel_canvas_size.height > this.API_CANVAS_RATIO) {
         this.active_canvas_pixel_height = pixel_canvas_size.height;
-        this.active_canvas_pixel_width = Math.floor(pixel_canvas_size.height * (this.API_CANVAS_SIZE.width / this.API_CANVAS_SIZE.height));
+        this.active_canvas_pixel_width = Math.floor(pixel_canvas_size.height * this.API_CANVAS_RATIO);
       } else {
         this.active_canvas_pixel_width = pixel_canvas_size.width;
-        this.active_canvas_pixel_height = Math.floor(pixel_canvas_size.width * (this.API_CANVAS_SIZE.height / this.API_CANVAS_SIZE.width));
+        this.active_canvas_pixel_height = Math.floor(pixel_canvas_size.width / this.API_CANVAS_RATIO);
       }
       this.target_canvas_pixel_width = this.active_canvas_pixel_width;
       this.target_canvas_pixel_height = this.active_canvas_pixel_height;
@@ -112,7 +117,7 @@
     _Class.prototype.zoomIn = function(picked_section) {
       var i, new_zoom, on_correct_route, _i, _ref;
       this.travelled_route.push(picked_section);
-      new_zoom = this.get('zoom') * this.zoom_multiplier;
+      new_zoom = this.get('zoom') * this.ZOOM_MULTIPLIER;
       this.active_fractal_manager.setCanvas(picked_section, new_zoom);
       this.set('zoom', new_zoom);
       if (this.may_play_next_round || this.round_over) {
@@ -142,14 +147,14 @@
       }
       this.active_fractal_manager.previousCanvas();
       this.travelled_route.pop();
-      this.set('zoom', this.get('zoom') / this.zoom_multiplier);
+      this.set('zoom', this.get('zoom') / this.ZOOM_MULTIPLIER);
       this.clicks_remaining -= 1;
       if (this.clicks_remaining === 0) {
         return this.roundFinished(false);
       }
     };
 
-    _Class.prototype.nextRoundButtonPressed = function() {
+    _Class.prototype.playNextRound = function() {
       if (this.may_play_next_round) {
         return this.startRound(this.get('round') + 1);
       } else if (this.round_over) {
@@ -181,9 +186,9 @@
           for (_i = 0, _len = _ref.length; _i < _len; _i++) {
             section = _ref[_i];
             round++;
-            _this.target_fractal.target_fractal_manager.setCanvas(section, Math.pow(_this.zoom_multiplier, round));
+            _this.target_fractal.target_fractal_manager.setCanvas(section, Math.pow(_this.ZOOM_MULTIPLIER, round));
           }
-          _this.target_fractal.zoom = Math.pow(_this.zoom_multiplier, generated_route['level']);
+          _this.target_fractal.zoom = Math.pow(_this.ZOOM_MULTIPLIER, generated_route['level']);
           _this.target_fractal.trigger('change');
           return $('#target-fractal').css('visibility', 'visible');
         };
@@ -264,7 +269,7 @@
         'fractal_game_message': this.model.get('fractal_game_message')
       }));
       $('#toggle-target-fractal').on('click', this.toggleVisibleFractal);
-      $('#next-round-button').on('click', this.model.nextRoundButtonPressed);
+      $('#next-round-button').on('click', this.model.playNextRound);
       $('#fractal-back-button').on('click', this.model.back);
       this.assign(this.active_fractal_manager_view, '.fractal-canvas-holder');
       return this.assign(this.fractal_sections_view, '.fractal-sections');
