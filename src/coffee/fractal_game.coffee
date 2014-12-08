@@ -81,15 +81,19 @@ window.FractalGame = class extends Backbone.Model
       distance = Math.sqrt(Math.pow(active_c.x - target_c.x, 2) + Math.pow(active_c.y - target_c.y, 2))
       round_score = 100 - 100 * Math.abs((@cartesian_diagonal - (9*distance))/@cartesian_diagonal)
       @set('fractal_game_message', "Round over. Round " + @get('round') + ": " + round_score + " / 100")
-      @set 'score', @get('score') + round_score
-      
+      @set 'score', @get('score') + round_score 
+    
     if (@get('round') != 3)
       @may_play_next_round = true
-      $('#next-round-button').css('visibility', 'visible')
     else
       @set('fractal_game_message', @get('fractal_game_message') + "<br/> Game finished. Total score : " + @get('score') + "/300") 
   
   zoomIn: (picked_section) =>
+    # must be set before rendering
+    if !(@may_play_next_round or @round_over)
+      @clicks_remaining -= 1
+      on_correct_route = false
+      
     @travelled_route.push(picked_section) 
     new_zoom = @get('zoom') * @ZOOM_MULTIPLIER
     @active_fractal_manager.setCanvas(picked_section, new_zoom)
@@ -101,9 +105,6 @@ window.FractalGame = class extends Backbone.Model
     if @may_play_next_round or @round_over
       return
       
-    @clicks_remaining -= 1
-    on_correct_route = false
-    
     # if the user arrived at the target location, change the game state
     if (new_zoom == @target_fractal.zoom)
       on_correct_route = true
@@ -118,13 +119,19 @@ window.FractalGame = class extends Backbone.Model
       @roundFinished(false)
         
   back: () =>
-    if @get('zoom') == 1 or @clicks_remaining == 0
+    if @get('zoom') == 1
       return
+      
+    # must update before rendering
+    clicks_remaining_before = @clicks_remaining
+    if clicks_remaining_before > 0
+      @clicks_remaining -= 1
+    
     @active_fractal_manager.previousCanvas()
     @travelled_route.pop()
     @set 'zoom', @get('zoom') / @ZOOM_MULTIPLIER
-    @clicks_remaining -= 1
-    if (@clicks_remaining == 0)
+    
+    if (clicks_remaining_before == 1)
       @roundFinished(false)
       
   playNextRound: () =>
@@ -179,7 +186,7 @@ window.FractalGameView = class extends Backbone.View
     <div class='fractal-menu'>
       <button id='toggle-target-fractal' class='btn fractal-game-btn'>Show/Hide Target</button>
       <button id='fractal-back-button' class='btn fractal-game-btn'>Back</button>
-      <button id='next-round-button' class='btn btn-success fractal-game-btn'>Play Next round</button>
+      <button id='next-round-button' class='btn btn-success fractal-game-btn' style='visibility: <%= next_round_visible %>;'>Play Next round</button>
     </div>
     <div class='fractal-info'>
       <span id='clicks-remaining' class='fractal-game-text'>Clicks left: <%= clicks_remaining %></span>
@@ -245,6 +252,7 @@ window.FractalGameView = class extends Backbone.View
       'active_canvas_pixel_width': @model.active_canvas_pixel_width
       'active_canvas_pixel_height': @model.active_canvas_pixel_height
       'fractal_game_message' : @model.get('fractal_game_message')
+      'next_round_visible' : if @model.round_over then 'visible' else 'hidden'
     }))
     
     $('#toggle-target-fractal').on('click', @toggleVisibleFractal)

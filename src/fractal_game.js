@@ -108,8 +108,7 @@
         this.set('score', this.get('score') + round_score);
       }
       if (this.get('round') !== 3) {
-        this.may_play_next_round = true;
-        return $('#next-round-button').css('visibility', 'visible');
+        return this.may_play_next_round = true;
       } else {
         return this.set('fractal_game_message', this.get('fractal_game_message') + "<br/> Game finished. Total score : " + this.get('score') + "/300");
       }
@@ -117,6 +116,10 @@
 
     _Class.prototype.zoomIn = function(picked_section) {
       var i, new_zoom, on_correct_route, _i, _ref;
+      if (!(this.may_play_next_round || this.round_over)) {
+        this.clicks_remaining -= 1;
+        on_correct_route = false;
+      }
       this.travelled_route.push(picked_section);
       new_zoom = this.get('zoom') * this.ZOOM_MULTIPLIER;
       this.active_fractal_manager.setCanvas(picked_section, new_zoom);
@@ -124,8 +127,6 @@
       if (this.may_play_next_round || this.round_over) {
         return;
       }
-      this.clicks_remaining -= 1;
-      on_correct_route = false;
       if (new_zoom === this.target_fractal.zoom) {
         on_correct_route = true;
         for (i = _i = 0, _ref = this.target_route.length - 1; 0 <= _ref ? _i <= _ref : _i >= _ref; i = 0 <= _ref ? ++_i : --_i) {
@@ -143,14 +144,18 @@
     };
 
     _Class.prototype.back = function() {
-      if (this.get('zoom') === 1 || this.clicks_remaining === 0) {
+      var clicks_remaining_before;
+      if (this.get('zoom') === 1) {
         return;
+      }
+      clicks_remaining_before = this.clicks_remaining;
+      if (clicks_remaining_before > 0) {
+        this.clicks_remaining -= 1;
       }
       this.active_fractal_manager.previousCanvas();
       this.travelled_route.pop();
       this.set('zoom', this.get('zoom') / this.ZOOM_MULTIPLIER);
-      this.clicks_remaining -= 1;
-      if (this.clicks_remaining === 0) {
+      if (clicks_remaining_before === 1) {
         return this.roundFinished(false);
       }
     };
@@ -217,7 +222,7 @@
       y: 0
     };
 
-    _Class.prototype.template = _.template("<div class='fractal-menu'> <button id='toggle-target-fractal' class='btn fractal-game-btn'>Show/Hide Target</button> <button id='fractal-back-button' class='btn fractal-game-btn'>Back</button> <button id='next-round-button' class='btn btn-success fractal-game-btn'>Play Next round</button> </div> <div class='fractal-info'> <span id='clicks-remaining' class='fractal-game-text'>Clicks left: <%= clicks_remaining %></span> <br/> <span id='active-zoom' class='zoom fractal-game-text'>Zoom: x<%= zoom %></span> <br/> <span class='fractal-game-text' id='fractal-game-message'> <%= fractal_game_message %> </span> </div> <div id='active-canvas' style='position:relative;'> <div class='fractal-canvas-holder' /> <div class='fractal-sections' /> </div>");
+    _Class.prototype.template = _.template("<div class='fractal-menu'> <button id='toggle-target-fractal' class='btn fractal-game-btn'>Show/Hide Target</button> <button id='fractal-back-button' class='btn fractal-game-btn'>Back</button> <button id='next-round-button' class='btn btn-success fractal-game-btn' style='visibility: <%= next_round_visible %>;'>Play Next round</button> </div> <div class='fractal-info'> <span id='clicks-remaining' class='fractal-game-text'>Clicks left: <%= clicks_remaining %></span> <br/> <span id='active-zoom' class='zoom fractal-game-text'>Zoom: x<%= zoom %></span> <br/> <span class='fractal-game-text' id='fractal-game-message'> <%= fractal_game_message %> </span> </div> <div id='active-canvas' style='position:relative;'> <div class='fractal-canvas-holder' /> <div class='fractal-sections' /> </div>");
 
     function _Class(options) {
       if (options == null) {
@@ -272,7 +277,8 @@
         'clicks_remaining': this.model.clicks_remaining,
         'active_canvas_pixel_width': this.model.active_canvas_pixel_width,
         'active_canvas_pixel_height': this.model.active_canvas_pixel_height,
-        'fractal_game_message': this.model.get('fractal_game_message')
+        'fractal_game_message': this.model.get('fractal_game_message'),
+        'next_round_visible': this.model.round_over ? 'visible' : 'hidden'
       }));
       $('#toggle-target-fractal').on('click', this.toggleVisibleFractal);
       $('#next-round-button').on('click', this.model.playNextRound);

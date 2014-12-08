@@ -292,7 +292,7 @@
           };
         })(this), 100);
       });
-      it('should not change anything if there are no clicks remaining', function() {
+      it('should not change clicks_remaining if there are no clicks remaining', function() {
         var local_fractal_game;
         local_fractal_game = new window.FractalGame({
           width: 400,
@@ -310,8 +310,7 @@
             }
             zoom = local_fractal_game.get('zoom');
             local_fractal_game.back();
-            local_fractal_game.clicks_remaining.should.be.exactly(0);
-            return local_fractal_game.get('zoom').should.be.exactly(zoom);
+            return local_fractal_game.clicks_remaining.should.be.exactly(0);
           };
         })(this), 200);
       });

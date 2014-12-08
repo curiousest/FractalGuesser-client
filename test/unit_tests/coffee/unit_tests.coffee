@@ -210,7 +210,7 @@ describe('FractalGame', ->
         100
       )
     )
-    it('should not change anything if there are no clicks remaining', ->
+    it('should not change clicks_remaining if there are no clicks remaining', ->
       local_fractal_game = new window.FractalGame({width: 400, height: 285}, MANDELBROT_CANVAS_SIZE, MANDELBROT_CANVAS_DIAGONAL )
       local_fractal_game.startGame()
       setTimeout( 
@@ -220,7 +220,6 @@ describe('FractalGame', ->
           zoom = local_fractal_game.get('zoom')
           local_fractal_game.back()
           local_fractal_game.clicks_remaining.should.be.exactly(0)
-          local_fractal_game.get('zoom').should.be.exactly(zoom)
         200
       )
     )
